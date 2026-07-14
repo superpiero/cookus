@@ -24,5 +24,6 @@ export default defineConfig({
     url: "http://localhost:3111",
     reuseExistingServer: true,
     timeout: 60_000,
+    env: { DISABLE_RATE_LIMITS: "1" }, // suite loginuje desítky účtů z jedné IP
   },
 });
