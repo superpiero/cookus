@@ -31,7 +31,8 @@ enum EmploymentType { PLNY_UVAZEK ZKRACENY_UVAZEK BRIGADA SEZONNI STAZ }
 enum SalaryPeriod { HODINA MESIC }
 enum JobStatus { OPEN CLOSED }
 enum ApplicationStatus { SENT VIEWED SHORTLISTED REJECTED HIRED }
-enum NotificationType { LIKE COMMENT MESSAGE APPLICATION APPLICATION_STATUS EXPERIENCE_REQUEST EXPERIENCE_CONFIRMED EXPERIENCE_DECLINED }
+enum NotificationType { LIKE COMMENT MESSAGE APPLICATION APPLICATION_STATUS EXPERIENCE_REQUEST EXPERIENCE_CONFIRMED EXPERIENCE_DECLINED POKE FRIEND_REQUEST FRIEND_ACCEPTED }
+enum FriendshipStatus { PENDING ACCEPTED }
 
 model User {
   id            String   @id @default(cuid())
@@ -188,6 +189,26 @@ model Notification {
   @@index([userId, readAt, createdAt])
 }
 
+model Friendship {
+  id String @id @default(cuid())
+  requesterId String; requester User @relation("friendRequester", onDelete: Cascade)
+  addresseeId String; addressee User @relation("friendAddressee", onDelete: Cascade)
+  status FriendshipStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  respondedAt DateTime?
+  @@unique([requesterId, addresseeId])   // opačný směr hlídá aplikace (auto-accept)
+  @@index([addresseeId, status])
+  @@index([requesterId, status])
+}
+
+model Poke {
+  id String @id @default(cuid())
+  fromId String; from User @relation("pokesSent", onDelete: Cascade)
+  toId String; to User @relation("pokesReceived", onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@index([toId, createdAt])
+}
+
 model PasswordResetToken {
   id String @id @default(cuid())
   userId String; user User @relation(onDelete: Cascade)
@@ -228,7 +249,8 @@ Insert notifikací přes `INSERT … ON CONFLICT DO NOTHING` (raw). Efekt: max 1
 ```
 /                      marketing homepage (ISR revalidate 300, veřejná)
 /login /register       auth (veřejné) · /forgot-password /reset-password
-/feed                  globální feed postů (přihlášení)
+/feed                  feed postů: taby Přátelé / Vše, chronologicky (přihlášení)
+/friends               žádosti o přátelství + seznam přátel (přihlášení)
 /post/[id]             detail postu s komentáři
 /people                adresář lidí: filtry openToWork / dovednost / město (veřejný)
 /jobs                  job board s filtry (veřejný — SEO)

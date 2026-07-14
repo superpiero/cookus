@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { BadgeCheck, Globe, MapPin, MessageCircle, Pencil } from "lucide-react";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
+import { getFriendshipState } from "@/lib/friends";
 import { startConversationAction } from "@/actions/messages";
+import { FriendButton, PokeButton } from "@/components/friends/FriendButtons";
 import { INSTITUTION_CATEGORY_LABELS } from "@/lib/const";
 import { formatMonthYear } from "@/lib/format";
 import { Avatar } from "@/components/ui/Avatar";
@@ -62,6 +64,7 @@ export default async function ProfilePage({
   const isOwner = viewer?.id === user.id;
   const isPerson = user.kind === "PERSON";
   const activeTab = tab ?? "fotky";
+  const friendship = viewer && !isOwner ? await getFriendshipState(viewer.id, user.id) : null;
 
   const tabItems = [
     { href: `/p/${handle}`, label: "Fotky", active: activeTab === "fotky", count: user._count.posts },
@@ -109,18 +112,22 @@ export default async function ProfilePage({
               )}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             {isOwner && (
               <Button href="/settings" variant="secondary" size="sm">
                 <Pencil className="size-4" /> Upravit profil
               </Button>
             )}
             {viewer && !isOwner && (
-              <form action={startConversationAction.bind(null, user.id)}>
-                <Button type="submit" size="sm">
-                  <MessageCircle className="size-4" /> Napsat zprávu
-                </Button>
-              </form>
+              <>
+                <form action={startConversationAction.bind(null, user.id)}>
+                  <Button type="submit" size="sm">
+                    <MessageCircle className="size-4" /> Napsat zprávu
+                  </Button>
+                </form>
+                {friendship && <FriendButton targetId={user.id} initial={friendship} />}
+                <PokeButton targetId={user.id} />
+              </>
             )}
             {!viewer && (
               <Button href={`/login?next=/p/${handle}`} size="sm">

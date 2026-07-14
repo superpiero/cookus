@@ -7,6 +7,7 @@ import { timeAgo } from "@/lib/format";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PokeButton } from "@/components/friends/FriendButtons";
 import type { NotificationType } from "@prisma/client";
 
 export const metadata: Metadata = { title: "Notifikace" };
@@ -29,6 +30,12 @@ function notificationText(type: NotificationType, actorName: string, jobTitle?: 
       return `${actorName} potvrdil/a tvoji praxi ✓`;
     case "EXPERIENCE_DECLINED":
       return `${actorName} odmítl/a potvrzení praxe`;
+    case "POKE":
+      return `👉 ${actorName} tě šťouchl/a`;
+    case "FRIEND_REQUEST":
+      return `${actorName} tě žádá o přátelství`;
+    case "FRIEND_ACCEPTED":
+      return `${actorName} přijal/a tvoji žádost — jste přátelé 🤝`;
   }
 }
 
@@ -37,6 +44,7 @@ function notificationHref(notification: {
   postId: string | null;
   jobId: string | null;
   conversationId: string | null;
+  actorHandle: string;
 }): string {
   switch (notification.type) {
     case "LIKE":
@@ -53,6 +61,11 @@ function notificationHref(notification: {
     case "EXPERIENCE_CONFIRMED":
     case "EXPERIENCE_DECLINED":
       return "/settings";
+    case "POKE":
+    case "FRIEND_ACCEPTED":
+      return `/p/${notification.actorHandle}`;
+    case "FRIEND_REQUEST":
+      return "/friends";
   }
 }
 
@@ -72,7 +85,7 @@ export default async function NotificationsPage() {
       postId: true,
       jobId: true,
       conversationId: true,
-      actor: { select: { name: true, avatarImageId: true } },
+      actor: { select: { id: true, name: true, handle: true, avatarImageId: true } },
       job: { select: { title: true } },
     },
   });
@@ -89,7 +102,7 @@ export default async function NotificationsPage() {
       {notifications.length === 0 ? (
         <EmptyState
           title="Zatím žádné notifikace"
-          description="Až někdo lajkne tvou fotku, napíše ti nebo se přihlásí na tvou pozici, uvidíš to tady."
+          description="Až někdo lajkne tvou fotku, šťouchne tě nebo se přihlásí na tvou pozici, uvidíš to tady."
         />
       ) : (
         <ul className="space-y-2">
@@ -99,18 +112,28 @@ export default async function NotificationsPage() {
               interactive
               className={`relative p-3 ${notification.readAt ? "" : "border-cherry"}`}
             >
-              <Link href={notificationHref(notification)} className="flex items-center gap-3 after:absolute after:inset-0">
-                <Avatar name={notification.actor.name} imageId={notification.actor.avatarImageId} size="md" />
-                <span className="min-w-0 flex-1">
-                  <span className={`block text-sm ${notification.readAt ? "" : "font-extrabold"}`}>
-                    {notificationText(notification.type, notification.actor.name, notification.job?.title)}
+              <div className="flex items-center gap-3">
+                <Link
+                  href={notificationHref({ ...notification, actorHandle: notification.actor.handle })}
+                  className="flex min-w-0 flex-1 items-center gap-3 after:absolute after:inset-0"
+                >
+                  <Avatar name={notification.actor.name} imageId={notification.actor.avatarImageId} size="md" />
+                  <span className="min-w-0 flex-1">
+                    <span className={`block text-sm ${notification.readAt ? "" : "font-extrabold"}`}>
+                      {notificationText(notification.type, notification.actor.name, notification.job?.title)}
+                    </span>
+                    <span className="text-xs text-smoke">{timeAgo(notification.createdAt)}</span>
                   </span>
-                  <span className="text-xs text-smoke">{timeAgo(notification.createdAt)}</span>
-                </span>
+                </Link>
+                {notification.type === "POKE" && (
+                  <span className="relative z-10 shrink-0">
+                    <PokeButton targetId={notification.actor.id} label="Šťouchnout zpátky" />
+                  </span>
+                )}
                 {!notification.readAt && (
                   <span className="size-2.5 shrink-0 rounded-full bg-cherry" aria-label="Nepřečtené" />
                 )}
-              </Link>
+              </div>
             </Card>
           ))}
         </ul>

@@ -1,6 +1,6 @@
 # Cookus — specifikace funkcí
 
-> Verze dokumentu: 1.1 (po stress-test revizi, viz `04-review-stress-test.md`) · Datum: 2026-07-14
+> Verze dokumentu: 1.2 (v1.1 po stress-test revizi; v1.2 přidává přátele, feed přátel a šťouchnutí) · Datum: 2026-07-14
 > Formát: každý modul má chování, akceptační kritéria (AC) a edge-cases (EC).
 
 ## 1. Účty a profily
@@ -47,6 +47,25 @@ Základem je **záznam praxe** — funguje i bez účtu druhé strany (řeší c
 - Like → notifikace LIKE autorovi (ne vlastní post). Unlike → smaže nepřečtenou LIKE notifikaci (dedup index, viz 02 §2.2).
 - Komentáře: plochý seznam; mazat smí autor komentáře i autor postu; notifikace COMMENT autorovi postu (ne vlastní).
 - **EC:** komentář na smazaný post → no-op s hláškou; prázdný komentář zakázán.
+
+### 2.4 Přátelé a feed přátel
+
+- Přátelství je **vzájemné** a funguje mezi libovolnými účty (člověk↔člověk, člověk↔podnik, podnik↔podnik): žádost → přijetí/odmítnutí. Opačná žádost od druhé strany = automatické přijetí (vzájemný zájem netřeba schvalovat dvakrát).
+- Profil: tlačítko dle stavu — **Přidat do přátel** → **Žádost odeslána (zrušit)** / **Přijmout žádost** → **Přátelé ✓ (odebrat)**.
+- `/friends`: příchozí žádosti (přijmout/odmítnout), odeslané žádosti (zrušit), seznam přátel (odebrat).
+- **Feed přátel**: `/feed` má taby **Přátelé** / **Vše**. Tab Přátelé = posty přátel + vlastní, **čistě chronologicky** (IG layout, žádný algoritmus). Výchozí tab: Přátelé, pokud uživatel aspoň jednoho přítele má; jinak Vše.
+- Notifikace: FRIEND_REQUEST (→ `/friends`), FRIEND_ACCEPTED (→ profil aktéra).
+- **AC:** žádost nelze poslat sám sobě ani duplicitně (ani obráceným směrem); přijmout/odmítnout smí jen adresát; zrušit jen žadatel; odebrat kterákoli strana; feed přátel vidí jen přihlášený a jen svůj.
+- **EC:** smazaný účet → cascade přátelství i žádostí; odmítnutí žádost smaže (lze požádat znovu); prázdný feed přátel → CTA na `/people`.
+
+### 2.5 Šťouchnutí (poke & pokeback)
+
+Nízkoprahový signál zájmu à la klasický Facebook poke — „všiml/a jsem si tě“ bez nutnosti psát zprávu. V gastro kontextu: podnik šťouchne kuchaře, kterého by rád, kuchař šťouchne podnik, kam by chtěl.
+
+- **Šťouchnout** jde z profilu (tlačítko 👉) — komukoli, ne jen přátelům.
+- Příjemce dostane notifikaci „👉 X tě šťouchl/a“ s tlačítkem **Šťouchnout zpátky** přímo v seznamu notifikací (pokeback = poke opačným směrem, jedno kliknutí).
+- **AC:** poke sám sobě zakázán; opakované šťouchnutí negeneruje další nepřečtenou notifikaci (dedup partial indexem, docs/02 §2.2); rate limit 30 šťouchnutí/hod/uživatel; poke se loguje (tabulka Poke) pro budoucí statistiky.
+- **EC:** šťouchnutí smazaného účtu → no-op; pokeback z notifikace, jejíž aktér mezitím smazal účet → notifikace zmizela cascadem, nic se nestane.
 
 ## 3. Job board
 

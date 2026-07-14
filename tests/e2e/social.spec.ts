@@ -3,9 +3,15 @@ import { join } from "node:path";
 import { login } from "./helpers";
 
 test.describe("Sociální vrstva", () => {
-  test("feed zobrazuje posty s lajky a komentáři", async ({ page }) => {
+  test("feed: výchozí tab Přátelé (chronologicky), tab Vše ukáže všechny", async ({ page }) => {
     await login(page, "karel@cookus.cz");
     await page.goto("/feed");
+    // Karel má přátele (bistro, bára) → výchozí tab Přátelé; post od bistra je vidět
+    await expect(page.getByText(/Sobotní brunch od 9:00/)).toBeVisible();
+    // post od Tomáše (není přítel) v tabu Přátelé není
+    await expect(page.getByText(/Flat white a rosetta/)).toHaveCount(0);
+    // tab Vše ukáže globální chronologický feed
+    await page.getByRole("link", { name: "Vše" }).click();
     await expect(page.getByText(/Flat white a rosetta/)).toBeVisible();
     await expect(page.getByRole("button", { name: /lajk/i }).first()).toBeVisible();
   });

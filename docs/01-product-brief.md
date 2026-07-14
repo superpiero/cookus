@@ -65,6 +65,7 @@ Cookus je webová platforma, která propojuje **celou českou gastroscénu** —
 7. **Notifikace** — lajk, komentář, nová zpráva, nová přihláška, změna stavu přihlášky, žádost o potvrzení praxe, výsledek potvrzení. Zvonek s počtem nepřečtených. Transakční e-maily (přihláška, žádost o potvrzení) přes abstrakci s Resend.
 8. **Konverzní homepage** — hero s hodnotovou propozicí, persony/use-cases, výhody, sociální důkaz (čísla až nad prahem důvěryhodnosti), dvojité CTA (Hledám práci / Hledám lidi).
 9. **Minimální administrace** — moderace obsahu, blokace účtů, udělování badge ověřeného podniku.
+10. **Přátelé a šťouchnutí** *(v1.2)* — vzájemná přátelství mezi libovolnými účty (lidé i podniky), feed přátel čistě chronologický à la Instagram, poke/pokeback jako nízkoprahový signál zájmu (podnik ↔ kandidát).
 
 ### Out of scope (roadmapa v2+)
 

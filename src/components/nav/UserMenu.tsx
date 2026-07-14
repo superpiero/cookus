@@ -56,6 +56,9 @@ export function UserMenu({ user }: { user: MenuUser }) {
           <Link href={`/p/${user.handle}`} className={item} onClick={() => setOpen(false)}>
             Můj profil
           </Link>
+          <Link href="/friends" className={item} onClick={() => setOpen(false)}>
+            Přátelé
+          </Link>
           {user.kind === "PERSON" && (
             <Link href="/applications" className={item} onClick={() => setOpen(false)}>
               Moje přihlášky

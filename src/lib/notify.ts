@@ -12,6 +12,7 @@ type NotifyInput = {
   applicationId?: string | null;
   experienceId?: string | null;
   conversationId?: string | null;
+  friendshipId?: string | null;
 };
 
 /**
@@ -23,11 +24,11 @@ export async function notify(input: NotifyInput): Promise<void> {
   if (input.userId === input.actorId) return;
   await db.$executeRaw`
     INSERT INTO "Notification"
-      ("id", "userId", "actorId", "type", "postId", "jobId", "applicationId", "experienceId", "conversationId", "createdAt")
+      ("id", "userId", "actorId", "type", "postId", "jobId", "applicationId", "experienceId", "conversationId", "friendshipId", "createdAt")
     VALUES (
       ${randomUUID()}, ${input.userId}, ${input.actorId}, ${input.type}::"NotificationType",
       ${input.postId ?? null}, ${input.jobId ?? null}, ${input.applicationId ?? null},
-      ${input.experienceId ?? null}, ${input.conversationId ?? null}, now()
+      ${input.experienceId ?? null}, ${input.conversationId ?? null}, ${input.friendshipId ?? null}, now()
     )
     ON CONFLICT DO NOTHING`;
 }

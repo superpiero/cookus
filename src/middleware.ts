@@ -24,6 +24,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/feed/:path*",
+    "/friends",
     "/messages/:path*",
     "/notifications",
     "/settings/:path*",

@@ -87,6 +87,14 @@ enum NotificationType {
   EXPERIENCE_REQUEST
   EXPERIENCE_CONFIRMED
   EXPERIENCE_DECLINED
+  POKE
+  FRIEND_REQUEST
+  FRIEND_ACCEPTED
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
 }
 
 model User {
@@ -124,6 +132,38 @@ model User {
   notificationsActed     Notification[]       @relation("notifActor")
   images                 ImageBlob[]
   passwordResetTokens    PasswordResetToken[]
+  friendshipsRequested   Friendship[]         @relation("friendRequester")
+  friendshipsReceived    Friendship[]         @relation("friendAddressee")
+  pokesSent              Poke[]               @relation("pokesSent")
+  pokesReceived          Poke[]               @relation("pokesReceived")
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  requester   User             @relation("friendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addresseeId String
+  addressee   User             @relation("friendAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  respondedAt DateTime?
+
+  notifications Notification[]
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+  @@index([requesterId, status])
+}
+
+model Poke {
+  id        String   @id @default(cuid())
+  fromId    String
+  from      User     @relation("pokesSent", fields: [fromId], references: [id], onDelete: Cascade)
+  toId      String
+  to        User     @relation("pokesReceived", fields: [toId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([toId, createdAt])
 }
 
 model Skill {
@@ -306,6 +346,8 @@ model Notification {
   experience     Experience?      @relation(fields: [experienceId], references: [id], onDelete: Cascade)
   conversationId String?
   conversation   Conversation?    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  friendshipId   String?
+  friendship     Friendship?      @relation(fields: [friendshipId], references: [id], onDelete: Cascade)
   readAt         DateTime?
   createdAt      DateTime         @default(now())
 

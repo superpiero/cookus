@@ -398,6 +398,27 @@ async function main() {
     });
   }
 
+  console.log("Přátelství a šťouchnutí…");
+  const friendship = (requester: User, addressee: User, accepted = true) =>
+    db.friendship.create({
+      data: {
+        requesterId: requester.id,
+        addresseeId: addressee.id,
+        status: accepted ? "ACCEPTED" : "PENDING",
+        respondedAt: accepted ? daysAgo(5) : null,
+      },
+      select: { id: true },
+    });
+
+  await friendship(karel, bistro);
+  await friendship(bara, karel);
+  await friendship(bara, bar);
+  await friendship(tomas, kavarna);
+  await friendship(klara, kavarna);
+  const evaKarelRequest = await friendship(eva, karel, false); // čekající žádost pro Karla
+
+  await db.poke.create({ data: { fromId: bara.id, toId: karel.id, createdAt: daysAgo(0, 6) } });
+
   console.log("Notifikace…");
   const karelPost = createdPosts[0]!;
   await db.notification.createMany({
@@ -406,6 +427,8 @@ async function main() {
       { userId: karel.id, actorId: eva.id, type: "COMMENT", postId: karelPost.id, createdAt: daysAgo(1, 5) },
       { userId: karel.id, actorId: bistro.id, type: "MESSAGE", conversationId: conv1.id, createdAt: daysAgo(0, 2) },
       { userId: karel.id, actorId: hotel.id, type: "EXPERIENCE_CONFIRMED", createdAt: daysAgo(4), readAt: daysAgo(3) },
+      { userId: karel.id, actorId: bara.id, type: "POKE", createdAt: daysAgo(0, 6) },
+      { userId: karel.id, actorId: eva.id, type: "FRIEND_REQUEST", friendshipId: evaKarelRequest.id, createdAt: daysAgo(0, 8) },
       { userId: bistro.id, actorId: karel.id, type: "APPLICATION", jobId: createdJobs[0]!.id, createdAt: daysAgo(2) },
       { userId: bistro.id, actorId: jirka.id, type: "APPLICATION", jobId: createdJobs[0]!.id, createdAt: daysAgo(1) },
       { userId: hotel.id, actorId: karel.id, type: "EXPERIENCE_REQUEST", createdAt: daysAgo(5) },
