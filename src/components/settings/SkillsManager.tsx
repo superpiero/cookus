@@ -6,6 +6,7 @@ import { addSkillAction, removeSkillAction } from "@/actions/profile";
 import type { FormState } from "@/actions/auth";
 import { Input, FieldError } from "@/components/ui/Field";
 import { SubmitButton } from "@/components/ui/SubmitButton";
+import { ALL_SKILLS } from "@/lib/skills";
 
 export function SkillsManager({ skills }: { skills: { id: string; name: string }[] }) {
   const [state, action] = useActionState<FormState, FormData>(addSkillAction, null);
@@ -39,7 +40,20 @@ export function SkillsManager({ skills }: { skills: { id: string; name: string }
         className="flex items-start gap-2"
       >
         <div className="flex-1">
-          <Input name="name" placeholder="např. Moderní česká kuchyně" maxLength={40} required minLength={2} />
+          <Input
+            name="name"
+            placeholder="Začni psát — napovíme (nebo napiš vlastní)"
+            maxLength={40}
+            required
+            minLength={2}
+            list="skill-suggestions"
+            autoComplete="off"
+          />
+          <datalist id="skill-suggestions">
+            {ALL_SKILLS.map((skill) => (
+              <option key={skill} value={skill} />
+            ))}
+          </datalist>
           <FieldError>{state?.error}</FieldError>
         </div>
         <SubmitButton variant="secondary" size="md">
