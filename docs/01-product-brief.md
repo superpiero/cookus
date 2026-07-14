@@ -1,6 +1,6 @@
 # Cookus — produktový brief
 
-> Pracovní název: **Cookus** · Verze dokumentu: 1.0 · Datum: 2026-07-14
+> Pracovní název: **Cookus** · Verze dokumentu: 1.1 (po stress-test revizi, viz `04-review-stress-test.md`) · Datum: 2026-07-14
 
 ## 1. Vize
 
@@ -56,23 +56,25 @@ Cookus je webová platforma, která propojuje **celou českou gastroscénu** —
 
 ### In scope (MVP)
 
-1. **Účty a profily** — registrace osoba/podnik, profil: avatar, headline, bio/resumé, lokalita, dovednosti (tagy), u podniku kategorie a web.
-2. **Ověřená praxe** — osoba přidá praxi s odkazem na podnik (účet v aplikaci) → podnik potvrdí/odmítne + report. Potvrzené záznamy = badge na profilu.
-3. **Sociální vrstva** — fotopost s client-side cropem (1:1 čtverec, 4:5 portrét), popisek, grid na profilu, globální feed, lajky, komentáře.
-4. **Job board** — podnik vystaví inzerát (název, kategorie, úvazek, lokalita, mzda od–do, popis); vyhledávání s filtry; přihláška profilem + zpráva; správa uchazečů se stavy (nová → zobrazená → užší výběr → přijat/zamítnut).
-5. **Zprávy** — 1:1 konverzace mezi libovolnými profily (člověk↔podnik, člověk↔člověk), historie, emoji.
-6. **Notifikace** — lajk, komentář, nová zpráva, nová přihláška, změna stavu přihlášky, žádost o potvrzení praxe, potvrzení praxe. Zvonek s počtem nepřečtených.
-7. **Konverzní homepage** — hero s hodnotovou propozicí, persony/use-cases, výhody, sociální důkaz, dvojité CTA (Hledám práci / Hledám lidi).
+1. **Účty a profily** — registrace osoba/podnik, profil: avatar, headline, bio/resumé, město, dovednosti (tagy), u podniku kategorie a web; obnova zapomenutého hesla; smazání účtu (GDPR).
+2. **Praxe s ověřením** — osoba přidá praxi (volný text podniku = funguje od prvního dne); volitelně ji propojí s účtem podniku → podnik potvrdí/odmítne + report. Potvrzené záznamy = badge „Ověřeno podnikem" na profilu. Podniky může admin označit „Ověřený podnik".
+3. **Sociální vrstva** — fotopost s client-side cropem (1:1 čtverec, 4:5 portrét), popisek, grid na profilu, globální feed, detail postu, lajky, komentáře.
+4. **Job board** — podnik vystaví inzerát (název, kategorie, úvazek, město z číselníku, mzda od–do, popis); vyhledávání s filtry; přihláška profilem + zpráva; správa uchazečů se stavy (nová → zobrazená → užší výběr → přijat/zamítnut); „moje přihlášky" pro uchazeče.
+5. **Adresář lidí** — `/people`: podnik aktivně hledá kandidáty (filtr „hledám práci", dovednost, město) → obousměrný marketplace.
+6. **Zprávy** — 1:1 konverzace mezi libovolnými profily (člověk↔podnik, člověk↔člověk), historie, emoji.
+7. **Notifikace** — lajk, komentář, nová zpráva, nová přihláška, změna stavu přihlášky, žádost o potvrzení praxe, výsledek potvrzení. Zvonek s počtem nepřečtených. Transakční e-maily (přihláška, žádost o potvrzení) přes abstrakci s Resend.
+8. **Konverzní homepage** — hero s hodnotovou propozicí, persony/use-cases, výhody, sociální důkaz (čísla až nad prahem důvěryhodnosti), dvojité CTA (Hledám práci / Hledám lidi).
+9. **Minimální administrace** — moderace obsahu, blokace účtů, udělování badge ověřeného podniku.
 
 ### Out of scope (roadmapa v2+)
 
-Sledování účtů (follow) a personalizovaný feed, push notifikace, směnný marketplace (à la Poached shifts), placené inzeráty a monetizace, video, vícejazyčnost (MVP je česky), mobilní aplikace, ATS integrace, doporučovací algoritmus.
+Sledování účtů (follow) a personalizovaný feed, push notifikace a e-mailové digesty, směnný marketplace (à la Poached shifts), placené inzeráty a monetizace, video, vícejazyčnost (MVP je česky), mobilní aplikace, ATS integrace, doporučovací algoritmus, tlačítko nahlášení obsahu, plná e-mailová verifikace podniků.
 
 ## 5. Metriky úspěchu (severní hvězdy MVP)
 
 - Registrace → vyplněný profil (avatar + ≥3 skills): **> 60 %**
 - Zobrazení inzerátu → přihláška: **> 5 %** (benchmark niche boardů 3–8 %)
-- Podíl profilů s ≥1 ověřenou praxí po 30 dnech: **> 25 %**
+- Podíl osobních profilů s ≥1 záznamem praxe po 30 dnech: **> 40 %**; z toho propojených s účtem podniku: **> 25 %** (ověření roste s hustotou sítě podniků)
 - D7 retence (návrat kvůli feedu/zprávám/notifikacím): **> 20 %**
 
 ## 6. Zdroje

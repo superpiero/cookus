@@ -1,101 +1,110 @@
 # Cookus — specifikace funkcí
 
-> Verze dokumentu: 1.0 · Datum: 2026-07-14
+> Verze dokumentu: 1.1 (po stress-test revizi, viz `04-review-stress-test.md`) · Datum: 2026-07-14
 > Formát: každý modul má chování, akceptační kritéria (AC) a edge-cases (EC).
 
 ## 1. Účty a profily
 
-### 1.1 Registrace a přihlášení
-- Registrace: volba **Jsem člověk z gastra** / **Jsme podnik** → jméno (u podniku název), e-mail, heslo (min 8 znaků), u podniku kategorie. Handle se navrhne ze jména (diakritika → ASCII, mezery → pomlčky, kolize → sufix čísla), lze upravit.
-- Po registraci rovnou přihlášen, redirect na `/settings` s výzvou k dokončení profilu (avatar, headline, skills).
-- **AC:** duplicitní e-mail vrátí srozumitelnou chybu; handle unikátní; po loginu redirect na `next` param nebo `/feed`.
-- **EC:** handle kolize (Jan Novák ×2) → `jan-novak-2`; e-mail case-insensitive (lowercase před uložením); rezervované handly (`admin`, `api`, `jobs`, `feed`, `messages`, `settings`, `login`, `register`, `notifications`, `styleguide`, `p`) zakázané.
+### 1.1 Registrace, přihlášení, obnova hesla
+- Registrace: volba **Jsem člověk z gastra** / **Jsme podnik** → jméno (u podniku název), e-mail, heslo (min 8 znaků), u podniku kategorie. Handle se navrhne ze jména (diakritika → ASCII, mezery → pomlčky, kolize → sufix čísla), lze upravit i později v nastavení.
+- Po registraci rovnou přihlášen, redirect na `/settings` s výzvou k dokončení profilu.
+- Zapomenuté heslo: `/forgot-password` → e-mail s odkazem (token TTL 1 h, jednorázový) → `/reset-password?token=…` → nové heslo. Bez `RESEND_API_KEY` se odkaz loguje na server (dev/demo režim).
+- **AC:** duplicitní e-mail vrátí srozumitelnou chybu (akceptovaný trade-off, rate limit 5 registrací/hod/IP); e-mail lowercase; po loginu redirect na `next` nebo `/feed`; zablokovaný účet (`isBlocked`) se nepřihlásí — generická hláška.
+- **EC:** handle kolize → `jan-novak-2`; rezervované handly (`admin`, `api`, `jobs`, `feed`, `messages`, `settings`, `login`, `register`, `notifications`, `styleguide`, `p`, `people`, `post`, `applications`, `verifications`) zakázané; reset token použitý/expirovaný → srozumitelná chyba + odkaz na nové vyžádání.
 
 ### 1.2 Profil
-- Veřejná stránka `/p/[handle]`: hlavička (avatar, jméno, headline, lokalita, badge druhu účtu, u osoby „hledám práci" pokud openToWork, u podniku kategorie + web), tlačítka **Napsat zprávu** (přihlášeným) a **Upravit profil** (vlastník).
-- Taby: **Fotky** (grid 3 sloupce, poměr dle postu), **Praxe** (osoba: timeline praxí; podnik: potvrzení lidé, kteří u něj pracovali), **Info** (bio/resumé, skills), u podniku **Pozice** (otevřené inzeráty).
-- Skills: tagy, max 15, vlastník přidává/maže v nastavení.
-- **AC:** profil je veřejně čitelný bez loginu (SEO); změny se projeví ihned (revalidace).
-- **EC:** neexistující handle → 404; prázdné stavy všech tabů s CTA pro vlastníka („Přidej první fotku").
+- Veřejná stránka `/p/[handle]`: hlavička (avatar, jméno, headline, město, badge druhu účtu; osoba: „hledám práci“ při openToWork; podnik: kategorie, web, badge **„Ověřený podnik“** pokud `verified`), tlačítka **Napsat zprávu** (přihlášeným, ne sobě) a **Upravit profil** (vlastník).
+- Taby: **Fotky** (grid 3 sloupce), **Praxe** (osoba: timeline; podnik: potvrzení lidé, kteří u něj pracovali), **Info** (bio/resumé, skills), u podniku **Pozice** (otevřené inzeráty).
+- Skills: tagy, max 15.
+- **AC:** profil veřejně čitelný bez loginu (SEO); změny ihned (revalidace).
+- **EC:** neexistující handle → 404; prázdné stavy všech tabů s CTA pro vlastníka.
 
-### 1.3 Ověřená praxe (differentiator)
-Flow:
-1. Osoba v nastavení přidá praxi: vybere podnik **vyhledáním mezi účty podniků** (autocomplete), roli, období, volitelný popis.
-2. Podnik dostane notifikaci `EXPERIENCE_REQUEST` a v sekci „Žádosti o potvrzení" vidí kartu žádosti.
-3. Podnik **potvrdí** (volitelně vyplní report/referenci, max 1000 znaků) nebo **odmítne**.
-4. Osoba dostane notifikaci o výsledku. Potvrzená praxe má na profilu badge **Ověřeno podnikem** + zobrazený report; PENDING se vlastníkovi zobrazuje šedě („čeká na potvrzení"), návštěvníkům se nezobrazuje vůbec; DECLINED vidí jen vlastník.
-- **AC:** potvrdit/odmítnout může výhradně cílový podnik; osoba může PENDING/DECLINED záznam smazat; CONFIRMED záznam smazat může (report tím zmizí z profilu), ale nemůže ho editovat (edit = nový cyklus potvrzení — MVP: editace zakázána, jen smazat a znovu).
-- **EC:** podnik zruší účet → praxe zůstává s označením zaniklého podniku (onDelete: SetNull na institutionId + snapshot názvu podniku v záznamu); duplicitní žádost na stejný podnik a roli povolena (různá období), ale max 3 PENDING žádosti na osobu a podnik (anti-spam); podnik nemůže přidávat praxi (jen PERSON).
+### 1.3 Praxe a její ověření (differentiator)
+Základem je **záznam praxe** — funguje i bez účtu druhé strany (řeší cold start):
+
+1. Osoba přidá praxi: název podniku **volným textem** (`institutionName`), role, období, popis → stav `UNLINKED`, na profilu viditelná bez badge.
+2. Volitelně (hned či později) **propojí s účtem podniku** (autocomplete mezi INSTITUTION účty) → stav `PENDING`, podniku vzniká notifikace `EXPERIENCE_REQUEST` + e-mail (je-li mail aktivní). Na profilu stále viditelná jako neověřená.
+3. Podnik na `/verifications` **potvrdí** (volitelný report/reference, max 1000 znaků) → `CONFIRMED`, badge **„✓ Ověřeno podnikem“** + citovaný report na profilu; nebo **odmítne** → `DECLINED`, viditelné jen vlastníkovi (může smazat či znovu propojit jinam).
+4. Osoba dostane notifikaci o výsledku.
+
+- **AC:** potvrdit/odmítnout smí výhradně cílový podnik; osoba může žádost stáhnout (PENDING → UNLINKED); CONFIRMED záznam nelze editovat (jen smazat); praxi přidává jen PERSON; propojený podnik bez `verified` badge se u ověření zobrazuje bez „Ověřený podnik“ štítku (síla reference je viditelně odstupňovaná).
+- **EC:** podnik smaže účet → záznam přežije se snapshotem názvu, badge ověření zaniká (zobrazí se jako neověřený); max 3 PENDING žádosti na osobu a podnik (anti-spam); duplicitní období povolena.
 
 ## 2. Sociální vrstva (IG-style)
 
 ### 2.1 Vytvoření postu
-- FAB „+" / tlačítko „Přidat fotku" → výběr souboru → crop UI (přepínač formátu **1:1** / **4:5**, zoom, drag) → popisek (max 2200 znaků, emoji nativně) → publikovat.
-- Klient: canvas export JPEG (1080 px šířka; 1080×1080 nebo 1080×1350), komprese q0.82.
-- **AC:** post se objeví na profilu (grid) a ve feedu; autor může post smazat (kaskádově mizí lajky/komentáře/notifikace na něj vázané... notifikace s postId → onDelete cascade).
-- **EC:** soubor > 10 MB před cropem → chyba na klientu; nepodporovaný formát → chyba; upload selže → post nevznikne (obrázek first, post až po úspěchu).
+- „Přidat fotku“ → výběr souboru → crop UI (formát **1:1** / **4:5**, zoom, drag) → popisek (max 2200 znaků, emoji nativně) → publikovat.
+- Klient: canvas export JPEG (1080×1080 / 1080×1350, q0.82). Upload first, post po úspěchu.
+- **AC:** post ihned na profilu (grid) a ve feedu; autor může smazat (cascade lajky/komentáře/notifikace).
+- **EC:** > 10 MB před cropem → chyba; nepodporovaný formát → chyba; limit 100 fotek/účet → srozumitelná hláška.
 
-### 2.2 Feed
-- `/feed`: chronologicky nejnovější posty všech účtů (MVP bez follow), infinite scroll (cursor pagination po 12), karta: autor (avatar, jméno, čas), fotka, akce (❤ + počet, 💬 + počet), popisek, poslední 2 komentáře, pole „Přidat komentář…".
-- **AC:** like je optimistický (okamžitá odezva UI), idempotentní; komentář se objeví bez reloadu.
+### 2.2 Feed a detail postu
+- `/feed`: nejnovější posty všech účtů, infinite scroll (cursor po 12). Karta: autor (avatar, jméno, čas), fotka, ❤ + počet (optimistický toggle), 💬 + počet → proklik na `/post/[id]`.
+- `/post/[id]`: fotka, popisek, všechny komentáře (od nejstarších), pole pro komentář.
+- **AC:** like idempotentní; komentář bez reloadu; feed funguje i nepřihlášeným? — NE, feed je za loginem (homepage je výkladní skříň).
 
 ### 2.3 Lajky a komentáře
-- Like/unlike toggle; autor postu dostane notifikaci LIKE (ne při unlike, ne při lajku vlastního postu; opakovaný like po unlike negeneruje duplicitní nepřečtenou notifikaci — dedup na [userId, actorId, postId, type, unread]).
-- Komentáře: plochý seznam (bez vláken v MVP), mazat může autor komentáře i autor postu. Notifikace COMMENT autorovi postu (ne při komentáři vlastního postu).
-- **EC:** komentář na smazaný post → 404/no-op; prázdný komentář zakázán.
+- Like → notifikace LIKE autorovi (ne vlastní post). Unlike → smaže nepřečtenou LIKE notifikaci (dedup index, viz 02 §2.2).
+- Komentáře: plochý seznam; mazat smí autor komentáře i autor postu; notifikace COMMENT autorovi postu (ne vlastní).
+- **EC:** komentář na smazaný post → no-op s hláškou; prázdný komentář zakázán.
 
 ## 3. Job board
 
 ### 3.1 Inzerát
-- Podnik: formulář název, kategorie (číselník gastro pozic), typ úvazku, lokalita (text, MVP), mzda od–do + perioda (volitelné, ale UI nabádá vyplnit — inzeráty se mzdou konvertují lépe), popis (markdown ne, jen odstavce), stav OPEN/CLOSED.
-- **AC:** vystavit smí jen INSTITUTION; editace/uzavření jen vlastník; uzavřený inzerát zůstává dostupný na URL s badge „Obsazeno", nelze se hlásit.
-- **EC:** mzda: buď obě hodnoty, nebo jen od, nebo nic; validace min ≤ max.
+- Podnik: název, kategorie (gastro číselník), typ úvazku, **město z číselníku CITIES** + volitelná adresa, mzda od–do + perioda (UI nabádá vyplnit), popis. Stav OPEN/CLOSED.
+- **AC:** vystavit smí jen INSTITUTION; editace/uzavření jen vlastník; CLOSED zůstává na URL s badge „Obsazeno“, nelze se hlásit; **job nelze v UI smazat** (historie přihlášek), jen uzavřít.
+- **EC:** mzda: obě, jen od, nebo nic; min ≤ max.
 
 ### 3.2 Vyhledávání
-- `/jobs`: fulltext (title + popis, PG `ILIKE` v MVP), filtry: kategorie, typ úvazku, lokalita (substring), „jen se mzdou"; řazení nejnovější. Cursor pagination. Filtry v URL (sdílitelné, SEO).
-- Karta: název, podnik (avatar + jméno → profil), lokalita, úvazek, mzda, stáří. Veřejné bez loginu.
+- `/jobs`: fulltext (`ILIKE` title+popis), filtry kategorie / úvazek / město (přesná shoda) / „jen se mzdou“; řazení nejnovější; cursor pagination; filtry v URL. Veřejné bez loginu (SEO).
+- Karta: název, podnik (avatar + jméno + badge ověření), město, úvazek, mzda, stáří.
 
 ### 3.3 Přihláška (< 5 minut, reálně < 1)
-- Detail: „Přihlásit se profilem" → modal s náhledem profilu (avatar, headline, počet ověřených praxí) + volitelná zpráva → odeslat. Nepřihlášený → login/registrace s návratem.
-- **AC:** 1 přihláška/osobu/inzerát (druhý pokus → info „už ses přihlásil/a"); podnik dostane notifikaci APPLICATION; přihlásit se může jen PERSON; na vlastní inzerát se podnik hlásit nemůže.
-- **EC:** přihláška na CLOSED job → chyba; smazaný job → přihlášky kaskádově pryč.
+- Detail: „Přihlásit se profilem“ → modal s náhledem profilu (avatar, headline, počet ověřených praxí) + volitelná zpráva → odeslat. Nepřihlášený → login s návratem.
+- **AC:** 1 přihláška/osoba/inzerát; notifikace APPLICATION podniku + e-mail (je-li aktivní); hlásit se smí jen PERSON; na CLOSED nelze.
+- **EC:** opakovaná přihláška → „už ses přihlásil/a“ + stav.
 
-### 3.4 Správa uchazečů
-- `/jobs/[id]/applicants` (vlastník): seznam přihlášek se stavy **Nová → Zobrazená → Užší výběr → Přijat / Zamítnut** (SENT/VIEWED/SHORTLISTED/HIRED/REJECTED). Otevření detailu přihlášky auto-přepne SENT→VIEWED. Karta: profil uchazeče (proklik), zpráva, ověřené praxe, tlačítka změny stavu + **Napsat zprávu** (otevře chat).
-- Uchazeč vidí stav svých přihlášek v „Moje přihlášky"; změna stavu SHORTLISTED/HIRED/REJECTED mu pošle notifikaci APPLICATION_STATUS (VIEWED ne — ticho je lepší než „zobrazeno a nic").
+### 3.4 Správa uchazečů a moje přihlášky
+- `/jobs/[id]/applicants` (vlastník): stavy **Nová → Zobrazená → Užší výběr → Přijat / Zamítnut**; otevření detailu auto SENT→VIEWED; karta: profil, zpráva, ověřené praxe, změna stavu, **Napsat zprávu**.
+- `/applications` (osoba): moje přihlášky se stavy. Notifikace APPLICATION_STATUS při SHORTLISTED/HIRED/REJECTED (VIEWED ne).
 
 ## 4. Zprávy
 
-- `/messages`: seznam konverzací (avatar, jméno, úryvek poslední zprávy, čas, badge nepřečtených), řazení dle lastMessageAt.
-- `/messages/[id]`: historie (starší se donačítají), bubliny, čas, input s emoji pickerem (paleta běžných emoji + nativní vstup), Enter odešle.
-- Konverzaci zakládá první zpráva („Napsat zprávu" z profilu / z přihlášky). Kdokoli může napsat komukoli (člověk↔podnik i člověk↔člověk; podnik↔podnik taky — proč ne).
-- Přečtenost: `ConversationRead.lastReadAt` se aktualizuje při otevření chatu a při doručení pollem, zprávy ostatních s createdAt > lastReadAt = nepřečtené.
-- **AC:** odeslání < 300 ms optimisticky; historie správně řazená; unread badge v navigaci agreguje konverzace; polling 5 s doručí zprávu protistrany bez reloadu.
-- **EC:** zpráva sám sobě zakázána; prázdná zpráva zakázána; max 4000 znaků; XSS — čistý text, emoji jsou jen unicode.
+- `/messages`: konverzace (avatar, jméno, úryvek, čas, unread badge), řazení dle lastMessageAt.
+- `/messages/[id]`: historie (donačítání starších), bubliny, input: nativní emoji + **quick-bar 8 běžných emoji**, Enter odešle.
+- Konverzaci zakládá první zpráva; psát si mohou libovolné dva účty. Kanonické pořadí dvojice → jedna konverzace na pár (DB unique).
+- Přečtenost: `ConversationRead.lastReadAt`; aktualizace při otevření a pak jen při `visibilityState === 'visible'` s novými zprávami.
+- **AC:** optimistické odeslání; polling 5 s doručí odpověď bez reloadu; participant-check na každém čtení (IDOR); badge agregace jedním SQL (02 §6).
+- **EC:** zpráva sám sobě zakázána; prázdná zakázána; max 4000 znaků.
 
 ## 5. Notifikace
 
-- Zvonek v navigaci s počtem nepřečtených (poll 30 s). `/notifications`: seznam — aktér (avatar, jméno), text dle typu, cíl (proklik na post/job/chat/profil), čas, nepřečtené zvýrazněné.
-- Otevření stránky označí zobrazené jako přečtené (bulk `readAt = now` při načtení).
-- Typy a texty: LIKE „❤️ X se líbí tvoje fotka", COMMENT „X okomentoval/a tvou fotku: ‚…'", MESSAGE „X ti poslal/a zprávu" (dedup na konverzaci), APPLICATION „X se hlásí na Y", APPLICATION_STATUS „Tvoje přihláška na Y: užší výběr", EXPERIENCE_REQUEST „X žádá o potvrzení praxe", EXPERIENCE_CONFIRMED/DECLINED „Y potvrdil/odmítl tvou praxi".
-- **EC:** aktér smazal účet → notifikace kaskádově pryč (FK na actorId cascade); smazaný cíl (post) → notifikace pryč (cascade).
+- Zvonek s počtem (poll 30 s). `/notifications`: aktér (avatar, jméno), text dle typu, proklik na cíl, čas; nepřečtené zvýrazněné; otevření stránky = bulk přečtení.
+- Dedup: partial unique index (02 §2.2) — od téhož aktéra, typu a cíle max 1 nepřečtená.
+- Typy: LIKE, COMMENT, MESSAGE (1/konverzace), APPLICATION, APPLICATION_STATUS, EXPERIENCE_REQUEST, EXPERIENCE_CONFIRMED, EXPERIENCE_DECLINED.
+- **EC:** smazaný aktér/cíl → cascade (FK, viz 02).
 
 ## 6. Homepage (konverzní)
 
-Struktura (dle best practices career sites + landing pages):
-1. **Hero**: headline s hodnotou („Práce v gastru bez životopisu. Profil, který za tebe mluví."), sub, **duální CTA**: `Hledám práci` / `Hledáme lidi`, vizuál v brand stylu (70s diner). Lišta s čísly (podniky / lidé / pozice — ze skutečné DB).
-2. **Jak to funguje** — 3 kroky pro každou stranu trhu (tab přepínač persony: kuchař / podnik).
-3. **Ukázka profilu** — screenshot/mock ověřené praxe s reportem (differentiator výslovně).
-4. **Persony/use-cases** — 3 karty (Karel, Bára, Simona) s citací a přínosem.
-5. **Poslední pozice** — živý výřez z job boardu (3 karty) + CTA na `/jobs`.
-6. **Závěrečné CTA** + patička.
-- **AC:** LCP < 2,5 s (SSR, žádné klientské knihovny nad rámec potřeby), plně responzivní, oba CTA vedou na registraci s předvolbou druhu účtu (`/register?kind=person|institution`).
+1. **Hero**: „Práce v gastru bez životopisu. Profil, který za tebe mluví.“ + sub + duální CTA `Hledám práci` / `Hledáme lidi` (→ `/register?kind=…`), vizuál 70s diner.
+2. **Čísla z DB až nad prahem** (≥50 lidí / ≥10 podniků / ≥10 pozic), jinak kvalitativní proof.
+3. **Jak to funguje** — 3 kroky, tab kuchař/podnik.
+4. **Ukázka ověřené praxe** — mock karta s reportem (differentiator).
+5. **Persony** — Karel, Bára, Simona s citací.
+6. **Poslední pozice** — 3 živé karty + CTA `/jobs`.
+7. **Závěrečné CTA** + patička (kontakt, GDPR/privacy).
+- **AC:** ISR (revalidate 300) → LCP < 2,5 s i po Neon idle; responzivní; oba CTA předvyplní druh účtu.
 
-## 7. Přístupnost a jazyk
+## 7. Administrace, moderace, GDPR
 
-- Celé UI česky; datumy česky („před 2 h", „3. 7. 2026").
-- Kontrast dle WCAG AA (brand tokeny s tím počítají), focus stavy, alt texty (popisek postu → alt), sémantické landmarky, klávesová dostupnost modalů.
+- `/admin` (jen `isAdmin`): seznam posledního obsahu (posty, komentáře, joby, účty) + akce: smazat post/komentář/job, (od)blokovat účet, udělit/odebrat **„Ověřený podnik“**.
+- Smazání účtu: `/settings` → potvrzení heslem → cascade dle 02 §2.1. (Právo na výmaz.)
+- Privacy policy stránka `/privacy` (stručná, česky).
 
-## 8. Seed data (demo + testy)
+## 8. Přístupnost a jazyk
 
-12 účtů (8 osob: kuchaři, barista, barmanka, cukrářka, číšník…; 4 podniky: bistro, kavárna, hotel, bar), ~20 postů s vygenerovanými obrázky (SVG→JPEG placeholdery v brand stylu), lajky, komentáře, 6 inzerátů napříč kategoriemi/úvazky, přihlášky v různých stavech, potvrzené i pending praxe s reporty, 3 konverzace, notifikace. Demo login: `karel@cookus.cz` / `cookus123` (a stejné heslo pro všechny seed účty).
+- Celé UI česky; relativní časy („před 2 h“); kontrast WCAG AA dle brand tokenů; focus stavy; alt = popisek postu; klávesová dostupnost modalů; touch targety ≥ 44 px.
+
+## 9. Seed data (demo + testy)
+
+12 účtů (8 osob, 4 podniky — z toho 2 `verified`), 1 admin, ~20 postů (brand-style generované obrázky), lajky, komentáře, 6 inzerátů, přihlášky ve všech stavech, praxe ve stavech UNLINKED/PENDING/CONFIRMED (s reporty), 3 konverzace, notifikace. Demo login: `karel@cookus.cz` / `cookus123`.

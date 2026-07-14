@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Cookus — Brand Guidelines</title>
+<style>
+  /* ---------- Fonts (local, latin + latin-ext) ---------- */
+  @font-face { font-family:'Alfa Slab One'; font-style:normal; font-weight:400; src:url(../../public/fonts/alfa-slab-one-latin.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC; }
+  @font-face { font-family:'Alfa Slab One'; font-style:normal; font-weight:400; src:url(../../public/fonts/alfa-slab-one-latin-ext.woff2) format('woff2');
+    unicode-range: U+0100-02BA, U+1E00-1E9F, U+2020, U+20A0-20AB; }
+  @font-face { font-family:'Pacifico'; font-style:normal; font-weight:400; src:url(../../public/fonts/pacifico-latin.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC; }
+  @font-face { font-family:'Pacifico'; font-style:normal; font-weight:400; src:url(../../public/fonts/pacifico-latin-ext.woff2) format('woff2');
+    unicode-range: U+0100-02BA, U+1E00-1E9F, U+2020, U+20A0-20AB; }
+  @font-face { font-family:'Archivo'; font-style:normal; font-weight:400 900; font-stretch:100%; src:url(../../public/fonts/archivo-latin.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC; }
+  @font-face { font-family:'Archivo'; font-style:normal; font-weight:400 900; font-stretch:100%; src:url(../../public/fonts/archivo-latin-ext.woff2) format('woff2');
+    unicode-range: U+0100-02BA, U+1E00-1E9F, U+2020, U+20A0-20AB; }
+
+  /* ---------- Tokens ---------- */
+  :root{
+    --cherry:#D62828; --ketchup:#A31621; --vanilla:#FFF6E9; --porcelain:#FFFDF6;
+    --vinyl:#221A15; --smoke:#6E645C; --chrome:#D8D3CB; --chrome-light:#EFE7DA;
+    --mustard:#F2A93B; --teal:#12756B;
+    --display:'Alfa Slab One', serif; --script:'Pacifico', cursive; --ui:'Archivo', sans-serif;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ background:#888; }
+  body{ font-family:var(--ui); color:var(--vinyl); font-size:10.5pt; line-height:1.55; }
+
+  .page{ width:210mm; height:297mm; background:var(--vanilla); margin:0 auto; position:relative;
+         overflow:hidden; page-break-after:always; padding:16mm 18mm; }
+  @media print { html,body{ background:none; } .page{ margin:0; } }
+  @page{ size:A4; margin:0; }
+
+  /* ---------- Shared ---------- */
+  .eyebrow{ font-family:var(--script); color:var(--cherry); font-size:14pt; margin-bottom:2mm; }
+  h2.title{ font-family:var(--display); font-weight:400; font-size:26pt; line-height:1.1; margin-bottom:6mm; letter-spacing:.2px; }
+  h3{ font-family:var(--ui); font-weight:800; font-size:11.5pt; text-transform:uppercase; letter-spacing:1.2px; margin:6mm 0 2.5mm; }
+  p.lede{ font-size:12pt; line-height:1.6; }
+  .muted{ color:var(--smoke); }
+  .small{ font-size:8.5pt; }
+  .checker{ height:9mm; background:
+      repeating-conic-gradient(var(--vinyl) 0% 25%, var(--vanilla) 0% 50%) 0 0 / 9mm 9mm; }
+  .checker.red{ background: repeating-conic-gradient(var(--ketchup) 0% 25%, var(--cherry) 0% 50%) 0 0 / 9mm 9mm; }
+  .pagenum{ position:absolute; bottom:8mm; right:18mm; font-size:8pt; color:var(--smoke); letter-spacing:1px; }
+  .footmark{ position:absolute; bottom:8mm; left:18mm; font-size:8pt; color:var(--smoke); letter-spacing:1px; }
+  .card{ background:var(--porcelain); border:2px solid var(--vinyl); border-radius:14px; box-shadow:4px 4px 0 var(--vinyl); }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+  .grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:5mm; }
+  table{ border-collapse:collapse; width:100%; font-size:9pt; }
+  th,td{ text-align:left; padding:2mm 2.5mm; border-bottom:1px solid var(--chrome); vertical-align:top; }
+  th{ font-weight:800; text-transform:uppercase; font-size:7.5pt; letter-spacing:1px; color:var(--smoke); }
+  code{ font-family:ui-monospace,Menlo,monospace; font-size:8.5pt; background:var(--chrome-light); padding:.5mm 1.5mm; border-radius:4px; }
+
+  /* ---------- Cover ---------- */
+  .cover{ background:var(--cherry); color:var(--vanilla); display:flex; flex-direction:column; padding:0; }
+  .cover .checkband{ height:14mm; background: repeating-conic-gradient(var(--vinyl) 0% 25%, var(--vanilla) 0% 50%) 0 0 / 14mm 14mm; }
+  .cover-main{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .cover .mark{ width:46mm; height:46mm; margin-bottom:10mm; filter:drop-shadow(3mm 3mm 0 rgba(34,26,21,.35)); }
+  .wordmark{ font-family:var(--display); font-weight:400; letter-spacing:1px; }
+  .cover .wordmark{ font-size:64pt; line-height:1; text-shadow:3mm 3mm 0 rgba(34,26,21,.35); }
+  .cover .tag{ font-family:var(--script); font-size:20pt; margin-top:6mm; color:var(--mustard); }
+  .cover .meta{ margin-top:14mm; font-size:10pt; letter-spacing:3px; text-transform:uppercase; opacity:.92; }
+
+  /* ---------- Logo page ---------- */
+  .logo-stage{ display:flex; align-items:center; justify-content:center; gap:8mm; padding:10mm 6mm; }
+  .logo-stage .wordmark{ font-size:38pt; color:var(--vinyl); }
+  .swatch-row{ display:grid; grid-template-columns:repeat(5,1fr); gap:4mm; }
+  .swatch{ border:2px solid var(--vinyl); border-radius:12px; overflow:hidden; box-shadow:3px 3px 0 var(--vinyl); background:var(--porcelain); }
+  .swatch .chip{ height:22mm; }
+  .swatch .info{ padding:2mm 2.5mm; font-size:7.5pt; line-height:1.45; }
+  .swatch .info b{ display:block; font-size:9pt; }
+
+  .dont{ border:2px dashed var(--cherry); border-radius:12px; padding:3mm; text-align:center; font-size:8pt; color:var(--smoke); }
+  .dont .x{ color:var(--cherry); font-weight:900; }
+
+  /* type specimens */
+  .spec{ border-left:3px solid var(--cherry); padding-left:5mm; margin-bottom:5mm; }
+  .spec .label{ font-size:7.5pt; letter-spacing:1.5px; text-transform:uppercase; color:var(--smoke); margin-bottom:1mm; }
+
+  /* UI samples */
+  .btn{ display:inline-block; font-family:var(--ui); font-weight:800; font-size:10pt; padding:3mm 6mm; border-radius:999px;
+        border:2px solid var(--vinyl); box-shadow:3px 3px 0 var(--vinyl); }
+  .btn.primary{ background:var(--cherry); color:#fff; }
+  .btn.secondary{ background:var(--porcelain); color:var(--vinyl); }
+  .btn.ghost{ border-style:dashed; box-shadow:none; background:transparent; }
+  .badge{ display:inline-block; font-size:8pt; font-weight:800; padding:1mm 3mm; border-radius:999px; border:1.5px solid var(--vinyl); }
+  .chatb{ max-width:60mm; padding:2.5mm 4mm; border-radius:14px; border:2px solid var(--vinyl); font-size:9pt; }
+</style>
+</head>
+<body>
+
+<!-- ============ 1 / COVER ============ -->
+<section class="page cover">
+  <div class="checkband"></div>
+  <div class="cover-main">
+    <svg class="mark" viewBox="0 0 120 120"><circle cx="60" cy="60" r="60" fill="#FFF6E9"/><circle cx="60" cy="60" r="53" fill="none" stroke="#D62828" stroke-width="4"/><g fill="#D62828"><circle cx="55" cy="54" r="13"/><circle cx="69" cy="47" r="15"/><circle cx="83" cy="54" r="13"/><rect x="51" y="54" width="38" height="14"/><rect x="55" y="71" width="30" height="13" rx="3.5"/><rect x="21" y="51" width="16" height="6" rx="3"/><rect x="15" y="62" width="22" height="6" rx="3"/><rect x="23" y="73" width="14" height="6" rx="3"/><path d="M91 25 l2.6 6.4 6.4 2.6 -6.4 2.6 -2.6 6.4 -2.6 -6.4 -6.4 -2.6 6.4 -2.6 Z"/></g></svg>
+    <div class="wordmark">Cookus</div>
+    <div class="tag">Gastro žije tady.</div>
+    <div class="meta">Brand Guidelines · v1.0 · červenec 2026</div>
+  </div>
+  <div class="checkband"></div>
+</section>
+
+<!-- ============ 2 / ZNAČKA ============ -->
+<section class="page">
+  <div class="eyebrow">01 · Značka</div>
+  <h2 class="title">Kdo je Cookus</h2>
+  <p class="lede"><b>Cookus propojuje celou gastroscénu</b> — kuchaře, baristy, barmany, cukrářky, provozní i podniky.
+  Profil nahrazuje životopis, praxi potvrzují podniky samotné a práce se ukazuje fotkami, ne frázemi.</p>
+
+  <h3>Positioning</h3>
+  <p>Profesní síť a pracovní tržiště pro gastronomii. Ne úřad práce — <b>místo, kde obor žije</b>: portfolio, reference, komunita a příležitosti na jednom místě.</p>
+
+  <h3>Inspirace vizuálního stylu</h3>
+  <p>Americká klasika 50.–70. let: <b>nablýskané káry, diner podniky, neony, kolečkové brusle a pomáda</b>.
+  Chrom a smalt, sytá třešňová červená, krémová vanilka, tlusté obrysy a poctivé stíny. Retro duše, moderní řemeslo.</p>
+
+  <h3>Osobnost značky</h3>
+  <div class="grid3" style="margin-top:2mm">
+    <div class="card" style="padding:4mm"><b>Poctivá</b><br><span class="muted small">Žádné korporátní fráze. Reference jsou ověřené, mzdy se píšou rovnou.</span></div>
+    <div class="card" style="padding:4mm"><b>Energická</b><br><span class="muted small">Gastro jede na plný plyn. Rychlá přihláška, rychlá odpověď, žádné čekání.</span></div>
+    <div class="card" style="padding:4mm"><b>Parádnická</b><br><span class="muted small">Jídlo se prodává očima a my taky. Všechno je nablýskané jako kapota Cadillacu.</span></div>
+  </div>
+
+  <h3>Tagline</h3>
+  <p style="font-family:var(--script); font-size:18pt; color:var(--cherry);">Gastro žije tady.</p>
+
+  <h3>Tone of voice</h3>
+  <table>
+    <tr><th style="width:30%">Pravidlo</th><th>Ano ✓</th><th>Ne ✗</th></tr>
+    <tr><td><b>Tykáme</b> — jsme z jedné kuchyně</td><td>„Přidej první fotku svého jídla."</td><td>„Vážený uživateli, vložte fotografii."</td></tr>
+    <tr><td><b>Krátké věty</b> — jako povel na place</td><td>„Hotovo. Inzerát letí ven."</td><td>„Váš inzerát byl úspěšně publikován do systému."</td></tr>
+    <tr><td><b>Gastro jazyk</b> — mírně, srozumitelně</td><td>„Směna, plac, výčep — vyber, co umíš."</td><td>Přehnaný slang nebo cizí žargon.</td></tr>
+    <tr><td><b>Povzbuzení, ne nátlak</b></td><td>„Profil máš skoro hotový — zbývá avatar."</td><td>„POZOR! Nedokončený profil!"</td></tr>
+  </table>
+  <div class="pagenum">2</div><div class="footmark">Cookus · Brand Guidelines</div>
+</section>
+
+<!-- ============ 3 / LOGO ============ -->
+<section class="page">
+  <div class="eyebrow">02 · Logo</div>
+  <h2 class="title">Značka a logotyp</h2>
+
+  <div class="grid2">
+    <div>
+      <h3 style="margin-top:0">Primární lockup</h3>
+      <div class="card logo-stage">
+        <svg width="70" height="70" viewBox="0 0 120 120"><circle cx="60" cy="60" r="60" fill="#D62828"/><circle cx="60" cy="60" r="53" fill="none" stroke="#FFF6E9" stroke-width="4"/><g fill="#FFF6E9"><circle cx="55" cy="54" r="13"/><circle cx="69" cy="47" r="15"/><circle cx="83" cy="54" r="13"/><rect x="51" y="54" width="38" height="14"/><rect x="55" y="71" width="30" height="13" rx="3.5"/><rect x="21" y="51" width="16" height="6" rx="3"/><rect x="15" y="62" width="22" height="6" rx="3"/><rect x="23" y="73" width="14" height="6" rx="3"/><path d="M91 25 l2.6 6.4 6.4 2.6 -6.4 2.6 -2.6 6.4 -2.6 -6.4 -6.4 -2.6 6.4 -2.6 Z"/></g></svg>
+        <div class="wordmark" style="font-size:30pt">Cookus</div>
+      </div>
+      <p class="small muted" style="margin-top:2mm">Značka (badge) + logotyp v písmu Alfa Slab One. Používej na vanilkovém nebo porcelánovém podkladu.</p>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Inverzní na červené</h3>
+      <div class="logo-stage" style="background:var(--cherry); border-radius:14px; border:2px solid var(--vinyl); box-shadow:4px 4px 0 var(--vinyl);">
+        <svg width="70" height="70" viewBox="0 0 120 120"><circle cx="60" cy="60" r="60" fill="#FFF6E9"/><circle cx="60" cy="60" r="53" fill="none" stroke="#D62828" stroke-width="4"/><g fill="#D62828"><circle cx="55" cy="54" r="13"/><circle cx="69" cy="47" r="15"/><circle cx="83" cy="54" r="13"/><rect x="51" y="54" width="38" height="14"/><rect x="55" y="71" width="30" height="13" rx="3.5"/><rect x="21" y="51" width="16" height="6" rx="3"/><rect x="15" y="62" width="22" height="6" rx="3"/><rect x="23" y="73" width="14" height="6" rx="3"/><path d="M91 25 l2.6 6.4 6.4 2.6 -6.4 2.6 -2.6 6.4 -2.6 -6.4 -6.4 -2.6 6.4 -2.6 Z"/></g></svg>
+        <div class="wordmark" style="font-size:30pt; color:var(--vanilla)">Cookus</div>
+      </div>
+      <p class="small muted" style="margin-top:2mm">Na červené a tmavé ploše se badge invertuje (vanilkový kruh, červená čepice).</p>
+    </div>
+  </div>
+
+  <h3>Konstrukce značky</h3>
+  <p class="small">Kuchařská čepice (toque) = řemeslo · <b>speed lines</b> = tempo oboru a chrom velkých kár · <b>sparkle</b> = nablýskaná parádа.
+  Badge tvar odkazuje na smaltované znaky aut. Mark funguje samostatně jako avatar a favicon.</p>
+
+  <div class="grid2" style="margin-top:3mm">
+    <div>
+      <h3>Ochranná zóna &amp; minimální velikost</h3>
+      <p class="small">Kolem loga drž volný prostor ve výšce „speed line" pruhu (≈ 25 % průměru badge).
+      Minimální velikost: badge 24 px, lockup 120 px šířky. Pod 24 px použij badge bez sparkle.</p>
+      <h3>Soubory</h3>
+      <p class="small"><code>public/brand/cookus-mark.svg</code> · <code>cookus-mark-mono.svg</code> (jednobarevný, dědí currentColor).
+      Logotyp se sází vždy písmem, ne obrázkem — v aplikaci komponenta <code>&lt;Logo /&gt;</code>.</p>
+    </div>
+    <div>
+      <h3>Zákazy</h3>
+      <div class="grid2" style="gap:3mm">
+        <div class="dont"><span class="x">✗</span> Nenatahovat, nedeformovat, nerotovat</div>
+        <div class="dont"><span class="x">✗</span> Neměnit barvy mimo paletu</div>
+        <div class="dont"><span class="x">✗</span> Nepřidávat přechody ani 3D efekty</div>
+        <div class="dont"><span class="x">✗</span> Nepokládat na fotky bez podkladové plochy</div>
+      </div>
+    </div>
+  </div>
+  <div class="pagenum">3</div><div class="footmark">Cookus · Brand Guidelines</div>
+</section>
+
+<!-- ============ 4 / BARVY ============ -->
+<section class="page">
+  <div class="eyebrow">03 · Barvy</div>
+  <h2 class="title">Paleta: smalt &amp; chrom</h2>
+
+  <h3 style="margin-top:0">Základ</h3>
+  <div class="swatch-row">
+    <div class="swatch"><div class="chip" style="background:#D62828"></div><div class="info"><b>Cherry</b>#D62828<br>rgb(214 40 40)<br><span class="muted">primární · CTA, akcenty</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#A31621"></div><div class="info"><b>Ketchup</b>#A31621<br>rgb(163 22 33)<br><span class="muted">hover, tmavé akcenty</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#FFF6E9; border-bottom:1px solid var(--chrome)"></div><div class="info"><b>Vanilla</b>#FFF6E9<br>rgb(255 246 233)<br><span class="muted">pozadí stránek</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#FFFDF6; border-bottom:1px solid var(--chrome)"></div><div class="info"><b>Porcelain</b>#FFFDF6<br>rgb(255 253 246)<br><span class="muted">karty, plochy</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#221A15"></div><div class="info"><b>Vinyl</b>#221A15<br>rgb(34 26 21)<br><span class="muted">text, obrysy, stíny</span></div></div>
+  </div>
+
+  <h3>Akcenty a pomocné</h3>
+  <div class="swatch-row">
+    <div class="swatch"><div class="chip" style="background:#F2A93B"></div><div class="info"><b>Mustard</b>#F2A93B<br><span class="muted">hvězdy, zvýraznění, badge „nové"</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#12756B"></div><div class="info"><b>Teal</b>#12756B<br><span class="muted">ověřeno, úspěch, sekundární</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#6E645C"></div><div class="info"><b>Smoke</b>#6E645C<br><span class="muted">sekundární text</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#D8D3CB"></div><div class="info"><b>Chrome</b>#D8D3CB<br><span class="muted">rámečky, oddělovače</span></div></div>
+    <div class="swatch"><div class="chip" style="background:linear-gradient(180deg,#F4F1EA,#C9C4BB)"></div><div class="info"><b>Chrome shine</b>gradient<br><span class="muted">speciální plochy, střídmě</span></div></div>
+  </div>
+
+  <h3>Poměry použití (60 / 30 / 10)</h3>
+  <div style="display:flex; height:14mm; border:2px solid var(--vinyl); border-radius:10px; overflow:hidden; box-shadow:3px 3px 0 var(--vinyl);">
+    <div style="flex:60; background:var(--vanilla); display:flex; align-items:center; justify-content:center; font-size:8pt;">60 % Vanilla / Porcelain</div>
+    <div style="flex:30; background:var(--vinyl); color:var(--vanilla); display:flex; align-items:center; justify-content:center; font-size:8pt;">30 % Vinyl (text, obrysy)</div>
+    <div style="flex:10; background:var(--cherry); color:#fff; display:flex; align-items:center; justify-content:center; font-size:8pt;">10 % Cherry</div>
+  </div>
+  <p class="small muted" style="margin-top:2mm">Mustard a Teal jsou koření — dohromady max ~5 % plochy. Červená je vzácná, proto funguje: šetři s ní na to, co má prodávat (CTA, notifikace, logo).</p>
+
+  <h3>Kontrast (WCAG AA)</h3>
+  <table>
+    <tr><th>Kombinace</th><th>Poměr</th><th>Použití</th></tr>
+    <tr><td>Vinyl na Vanilla</td><td>14,9 : 1 ✓</td><td>běžný text</td></tr>
+    <tr><td>Smoke na Vanilla</td><td>4,9 : 1 ✓</td><td>sekundární text</td></tr>
+    <tr><td>Bílá na Cherry</td><td>4,9 : 1 ✓</td><td>primární tlačítko</td></tr>
+    <tr><td>Bílá na Teal</td><td>5,9 : 1 ✓</td><td>badge Ověřeno</td></tr>
+    <tr><td>Vinyl na Mustard</td><td>7,9 : 1 ✓</td><td>žluté badge</td></tr>
+    <tr><td>Cherry na Vanilla</td><td>4,6 : 1 ✓*</td><td>*jen velký/tučný text a ikony</td></tr>
+  </table>
+  <div class="pagenum">4</div><div class="footmark">Cookus · Brand Guidelines</div>
+</section>
+
+<!-- ============ 5 / TYPOGRAFIE ============ -->
+<section class="page">
+  <div class="eyebrow">04 · Typografie</div>
+  <h2 class="title">Písma</h2>
+
+  <div class="spec">
+    <div class="label">Display — Alfa Slab One · nadpisy H1–H2, logotyp, velká čísla</div>
+    <div style="font-family:var(--display); font-size:24pt; line-height:1.15;">Příliš žluťoučký kůň DÝŠE</div>
+    <div class="small muted">Tlustý slab jako neonový štít dineru. Nikdy pro souvislý text. Vždy regular (jediný řez).</div>
+  </div>
+
+  <div class="spec">
+    <div class="label">Script — Pacifico · dekorativní akcenty, eyebrow labely, tagline</div>
+    <div style="font-family:var(--script); font-size:20pt; color:var(--cherry);">Gastro žije tady — úplně přesně!</div>
+    <div class="small muted">Neonový rukopis. Max jedna fráze na obrazovku, nikdy pro UI prvky ani odstavce.</div>
+  </div>
+
+  <div class="spec">
+    <div class="label">UI &amp; text — Archivo (variable 400–900) · vše ostatní</div>
+    <div style="font-size:13pt; font-weight:400;">Regular 400 — odstavce, popisky. Příliš žluťoučký kůň úpěl ďábelské ódy.</div>
+    <div style="font-size:13pt; font-weight:600;">SemiBold 600 — jména, důrazy, odkazy.</div>
+    <div style="font-size:13pt; font-weight:800;">ExtraBold 800 — tlačítka, H3, taby, badge.</div>
+    <div class="small muted">Americký grotesk s širokou kresbou — moderní protiváha retra. Čeština plně podporována.</div>
+  </div>
+
+  <h3>Škála (web, rem)</h3>
+  <table>
+    <tr><th>Token</th><th>Velikost</th><th>Písmo / řez</th><th>Použití</th></tr>
+    <tr><td><code>display</code></td><td>2.5–3.5rem</td><td>Alfa Slab One</td><td>hero homepage</td></tr>
+    <tr><td><code>h1</code></td><td>2rem</td><td>Alfa Slab One</td><td>název stránky</td></tr>
+    <tr><td><code>h2</code></td><td>1.5rem</td><td>Alfa Slab One</td><td>sekce</td></tr>
+    <tr><td><code>h3</code></td><td>1.125rem</td><td>Archivo 800</td><td>karty, podsekce</td></tr>
+    <tr><td><code>body</code></td><td>1rem / 1.6</td><td>Archivo 400</td><td>text</td></tr>
+    <tr><td><code>small</code></td><td>0.875rem</td><td>Archivo 400–600</td><td>meta, popisky</td></tr>
+    <tr><td><code>tiny</code></td><td>0.75rem</td><td>Archivo 600</td><td>badge, časy</td></tr>
+  </table>
+
+  <h3>Pravidla</h3>
+  <p class="small">1) Alfa Slab One vždy s <code>line-height ≤ 1.2</code> a mírným prostrkáním (+0.01em). 2) Pacifico nikdy nad 1 řádek.
+  3) Archivo 800 pro všechny interaktivní prvky — tlačítka jsou VELKÁ a sebevědomá. 4) Číslům v UI (mzdy, počty) sluší tabulkové číslice <code>font-variant-numeric: tabular-nums</code>.</p>
+  <div class="pagenum">5</div><div class="footmark">Cookus · Brand Guidelines</div>
+</section>
+
+<!-- ============ 6 / GRAFICKÉ PRVKY ============ -->
+<section class="page">
+  <div class="eyebrow">05 · Grafické prvky</div>
+  <h2 class="title">Chrom, smalt a šachovnice</h2>
+
+  <div class="grid2">
+    <div>
+      <h3 style="margin-top:0">Šachovnice (checker)</h3>
+      <div class="checker" style="border:2px solid var(--vinyl); border-radius:8px;"></div>
+      <div class="checker red" style="border:2px solid var(--vinyl); border-radius:8px; margin-top:3mm;"></div>
+      <p class="small muted" style="margin-top:2mm">Podlaha dineru. Úzké pruhy jako oddělovače sekcí (hero, patička, cover). Nikdy jako pozadí textu.</p>
+
+      <h3>Hard shadow &amp; obrysy</h3>
+      <div class="card" style="padding:4mm; margin-bottom:3mm;">Karta: obrys 2px Vinyl + stín <code>4px 4px 0</code> — smaltová cedule.</div>
+      <p class="small muted">Žádné rozmazané stíny. Interakce: hover zvedne prvek o 1–2 px (stín se prodlouží), klik přitlačí (stín zmizí).</p>
+
+      <h3>Rádiusy</h3>
+      <p class="small">Tlačítka a badge: <b>pill</b> (999px) · karty a vstupy: <b>14 px</b> · fotky v gridu: <b>8 px</b> · modaly: <b>20 px</b>. Ostré rohy nepoužíváme — všechno je zaoblené jako kapota.</p>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Sparkle ✦</h3>
+      <div style="display:flex; gap:5mm; align-items:center;">
+        <svg width="30" height="30" viewBox="0 0 20 20"><path d="M10 1 l2 5.2 5.2 2 -5.2 2 -2 5.2 -2 -5.2 -5.2 -2 5.2 -2Z" fill="#F2A93B"/></svg>
+        <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 1 l2 5.2 5.2 2 -5.2 2 -2 5.2 -2 -5.2 -5.2 -2 5.2 -2Z" fill="#D62828"/></svg>
+        <span class="small muted">Odlesk chromu — ozdoba prázdných stavů, úspěchů, badge „ověřeno". Max 2–3 na obrazovku.</span>
+      </div>
+
+      <h3>Fotografie</h3>
+      <p class="small">Obsah komunity je hlavní vizuál: jídlo, drinky, ruce v akci, plac. Teplé tóny, přirozené světlo.
+      Formáty postů: <b>1:1</b> a <b>4:5</b> (IG standard), avatar 1:1 kruh. Ilustrační fotky značky vždy s vanilkovým rámem nebo na kartě — nikdy plnobarevný bleed s textem přes fotku.</p>
+
+      <h3>Ikony</h3>
+      <p class="small">Lineární, tah 2px, zaoblené konce (styl Lucide). Zákaz emoji v navigaci; emoji patří jen do obsahu (chat, komentáře).</p>
+
+      <h3>Vzor „ticket"</h3>
+      <div style="background:var(--porcelain); border:2px dashed var(--vinyl); border-radius:12px; padding:3mm; text-align:center;">
+        <span class="small">Perforovaný okraj = kupón / volná směna (roadmapa)</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>Kompozice stránky</h3>
+  <p class="small">Velkorysé okraje, obsah v kartách na vanilkovém pozadí. Checker pruh ohraničuje hero a patičku.
+  Červená vede oko: 1 primární CTA na obrazovku. Rytmus 4px mřížky (spacing tokeny 4/8/12/16/24/32/48/64).</p>
+  <div class="pagenum">6</div><div class="footmark">Cookus · Brand Guidelines</div>
+</section>
+
+<!-- ============ 7 / UI APLIKACE ============ -->
+<section class="page">
+  <div class="eyebrow">06 · UI aplikace</div>
+  <h2 class="title">Součástky v akci</h2>
+
+  <div class="grid2">
+    <div>
+      <h3 style="margin-top:0">Tlačítka</h3>
+      <p><span class="btn primary">Hledám práci</span>&nbsp; <span class="btn secondary">Hledáme lidi</span>&nbsp; <span class="btn ghost">Zrušit</span></p>
+      <p class="small muted">Primary = Cherry, jen jedno na obrazovku. Secondary = Porcelain. Ghost bez stínu pro terciární akce.</p>
+
+      <h3>Badge</h3>
+      <p>
+        <span class="badge" style="background:var(--teal); color:#fff;">✓ Ověřeno podnikem</span>&nbsp;
+        <span class="badge" style="background:var(--mustard);">Nové</span>&nbsp;
+        <span class="badge" style="background:var(--porcelain);">Brigáda</span>&nbsp;
+        <span class="badge" style="background:var(--cherry); color:#fff;">3</span>
+      </p>
+      <p class="small muted">Teal patří výhradně ověřené praxi — je to pečeť důvěry, nesmí se ředit.</p>
+
+      <h3>Chat</h3>
+      <div style="display:flex; flex-direction:column; gap:2mm;">
+        <div class="chatb" style="background:var(--porcelain); align-self:flex-start;">Ahoj! Máte ještě volnou tu směnu v sobotu? 🙌</div>
+        <div class="chatb" style="background:var(--cherry); color:#fff; align-self:flex-end;">Jasně, počítáme s tebou 🔥</div>
+      </div>
+      <p class="small muted" style="margin-top:2mm">Odchozí = Cherry, příchozí = Porcelain. Emoji vítána v obsahu.</p>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Karta inzerátu</h3>
+      <div class="card" style="padding:4mm;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <b style="font-size:12pt;">Šéfkuchař/ka</b>
+          <span class="badge" style="background:var(--mustard);">Plný úvazek</span>
+        </div>
+        <div class="small muted">Bistro U Chroma · Praha 7</div>
+        <div style="font-weight:800; margin-top:1.5mm;">45–60 000 Kč/měs</div>
+        <div style="margin-top:2.5mm;"><span class="btn primary" style="font-size:8.5pt; padding:2mm 4mm;">Přihlásit se profilem</span></div>
+      </div>
+
+      <h3>Karta ověřené praxe</h3>
+      <div class="card" style="padding:4mm;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <b>Sous chef · Bistro U Chroma</b>
+          <span class="badge" style="background:var(--teal); color:#fff;">✓ Ověřeno</span>
+        </div>
+        <div class="small muted">2023–2025 · potvrzeno podnikem</div>
+        <div class="small" style="margin-top:1.5mm; border-left:3px solid var(--teal); padding-left:3mm;">„Karel táhl večerní servis i při plné rezervaci. Kdykoli znovu."</div>
+      </div>
+      <p class="small muted" style="margin-top:2mm">Report podniku se cituje — je to nejcennější obsah platformy.</p>
+    </div>
+  </div>
+
+  <h3>Přístupnost</h3>
+  <p class="small">Kontrast AA minimum (viz kap. 03) · focus ring 2px Cherry s 2px offsetem · touch targety ≥ 44px ·
+  stavy nikdy jen barvou (ikona + text) · alt texty z popisků fotek.</p>
+  <div class="pagenum">7</div><div class="footmark">Cookus · Brand Guidelines</div>
+</section>
+
+<!-- ============ 8 / TOKENS ============ -->
+<section class="page">
+  <div class="eyebrow">07 · Design tokens</div>
+  <h2 class="title">Tokeny pro vývoj</h2>
+  <p class="small muted">Zdroj pravdy pro Tailwind v4 <code>@theme</code> v <code>src/app/globals.css</code>. Komponenty čerpají výhradně z tokenů — žádné ad-hoc hex hodnoty v kódu.</p>
+
+  <div class="grid2" style="margin-top:4mm;">
+    <table>
+      <tr><th>Token (CSS)</th><th>Hodnota</th></tr>
+      <tr><td><code>--color-cherry</code></td><td>#D62828</td></tr>
+      <tr><td><code>--color-ketchup</code></td><td>#A31621</td></tr>
+      <tr><td><code>--color-vanilla</code></td><td>#FFF6E9</td></tr>
+      <tr><td><code>--color-porcelain</code></td><td>#FFFDF6</td></tr>
+      <tr><td><code>--color-vinyl</code></td><td>#221A15</td></tr>
+      <tr><td><code>--color-smoke</code></td><td>#6E645C</td></tr>
+      <tr><td><code>--color-chrome</code></td><td>#D8D3CB</td></tr>
+      <tr><td><code>--color-chrome-light</code></td><td>#EFE7DA</td></tr>
+      <tr><td><code>--color-mustard</code></td><td>#F2A93B</td></tr>
+      <tr><td><code>--color-teal</code></td><td>#12756B</td></tr>
+    </table>
+    <table>
+      <tr><th>Token</th><th>Hodnota</th></tr>
+      <tr><td><code>--font-display</code></td><td>Alfa Slab One</td></tr>
+      <tr><td><code>--font-script</code></td><td>Pacifico</td></tr>
+      <tr><td><code>--font-sans</code></td><td>Archivo</td></tr>
+      <tr><td><code>--radius-card</code></td><td>14px</td></tr>
+      <tr><td><code>--radius-photo</code></td><td>8px</td></tr>
+      <tr><td><code>--radius-modal</code></td><td>20px</td></tr>
+      <tr><td><code>--shadow-diner</code></td><td>4px 4px 0 var(--color-vinyl)</td></tr>
+      <tr><td><code>--shadow-diner-sm</code></td><td>3px 3px 0 var(--color-vinyl)</td></tr>
+      <tr><td><code>--border-diner</code></td><td>2px solid var(--color-vinyl)</td></tr>
+      <tr><td>spacing</td><td>4px grid (4–64)</td></tr>
+    </table>
+  </div>
+
+  <h3>Checklist použití značky</h3>
+  <p class="small">☐ Jedno Cherry CTA na obrazovku · ☐ Nadpisy Alfa Slab, UI Archivo 800 · ☐ Karty: obrys + hard shadow ·
+  ☐ Checker jen jako dekorativní pruh · ☐ Teal jen pro ověření · ☐ Kontrast AA ověřen · ☐ Emoji jen v obsahu</p>
+
+  <div style="position:absolute; bottom:22mm; left:18mm; right:18mm;">
+    <div class="checker red" style="border-radius:8px;"></div>
+  </div>
+  <div class="pagenum">8</div><div class="footmark">Cookus · Brand Guidelines · v1.0</div>
+</section>
+
+</body>
+</html>

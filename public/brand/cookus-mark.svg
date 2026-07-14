@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <title>Cookus mark</title>
+  <circle cx="60" cy="60" r="60" fill="#D62828"/>
+  <circle cx="60" cy="60" r="53" fill="none" stroke="#FFF6E9" stroke-width="4"/>
+  <g fill="#FFF6E9">
+    <!-- toque -->
+    <circle cx="55" cy="54" r="13"/>
+    <circle cx="69" cy="47" r="15"/>
+    <circle cx="83" cy="54" r="13"/>
+    <rect x="51" y="54" width="38" height="14"/>
+    <rect x="55" y="71" width="30" height="13" rx="3.5"/>
+    <!-- speed lines -->
+    <rect x="21" y="51" width="16" height="6" rx="3"/>
+    <rect x="15" y="62" width="22" height="6" rx="3"/>
+    <rect x="23" y="73" width="14" height="6" rx="3"/>
+    <!-- sparkle -->
+    <path d="M91 25 l2.6 6.4 6.4 2.6 -6.4 2.6 -2.6 6.4 -2.6 -6.4 -6.4 -2.6 6.4 -2.6 Z"/>
+  </g>
+</svg>
