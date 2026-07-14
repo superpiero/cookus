@@ -42,7 +42,7 @@ npm run build && npm run test:e2e   # Playwright — klíčová uživatelská fl
 
 Podrobný návod: **[DEPLOY.md](DEPLOY.md)**. Ve zkratce:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/superpiero/cookus/tree/claude/gastro-job-marketplace-yll7ea)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/superpiero/cookus)
 
 
 1. Založ **Neon** (nebo Vercel Postgres) databázi.

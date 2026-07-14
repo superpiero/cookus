@@ -19,8 +19,7 @@ Nejjednodušší je **Vercel Postgres** (běží na Neonu) — provisioní se p�
 
 1. **Add New… → Project** → vyber repo `superpiero/cookus`.
 2. **Root Directory** = kořen repa, framework se detekuje jako **Next.js**.
-3. **Production Branch**: v Project Settings → Git nastav `claude/gastro-job-marketplace-yll7ea`
-   (nebo repo napřed smerguj do `main`).
+3. **Production Branch**: použij `main` (obsahuje kompletní kód; je to výchozí větev pro deploy).
 
 ## 3. Environment Variables
 
