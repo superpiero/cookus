@@ -21,10 +21,7 @@ test.describe("Job board", () => {
     await page.getByRole("button", { name: "Přihlásit se profilem" }).click();
     await page.getByLabel("Zpráva (volitelná)").fill("Kafe je moje druhá láska hned po omáčkách.");
     await page.getByRole("button", { name: "Odeslat přihlášku" }).click();
-    await expect(page.getByText(/Přihláška odeslána/)).toBeVisible();
-
-    // opakovaná návštěva ukáže stav místo tlačítka
-    await page.reload();
+    // Po odeslání revalidace nahradí formulář stavem přihlášky (docs/03 §3.3)
     await expect(page.getByText(/Už ses přihlásil/)).toBeVisible();
 
     // podnik vidí přihlášku i notifikaci

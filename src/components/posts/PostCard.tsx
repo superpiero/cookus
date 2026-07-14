@@ -19,7 +19,7 @@ export type PostCardData = {
 
 export function PostCard({ post, loggedIn }: { post: PostCardData; loggedIn: boolean }) {
   return (
-    <Card className="overflow-hidden">
+    <Card as="article" className="overflow-hidden">
       <div className="flex items-center gap-2.5 px-4 py-2.5">
         <Avatar name={post.author.name} imageId={post.author.avatarImageId} size="sm" />
         <Link href={`/p/${post.author.handle}`} className="truncate text-sm font-extrabold hover:underline">

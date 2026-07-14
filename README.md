@@ -40,6 +40,11 @@ npm run build && npm run test:e2e   # Playwright — klíčová uživatelská fl
 
 ## Nasazení na Vercel
 
+Podrobný návod: **[DEPLOY.md](DEPLOY.md)**. Ve zkratce:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/superpiero/cookus/tree/claude/gastro-job-marketplace-yll7ea)
+
+
 1. Založ **Neon** (nebo Vercel Postgres) databázi.
 2. Ve Vercelu importuj repo a nastav env proměnné:
    - `DATABASE_URL` — pooled connection string (Neon host s `-pooler`)

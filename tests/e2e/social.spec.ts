@@ -13,14 +13,27 @@ test.describe("Sociální vrstva", () => {
   test("like je optimistický a idempotentní", async ({ page }) => {
     await login(page, "marta@cookus.cz");
     await page.goto("/feed");
-    const likeButton = page.getByRole("button", { name: "Dát lajk" }).first();
+    // Připni kartu podle indexu (stabilní) — najdi první ještě neolajkovanou.
+    // Filtr přímo v lokátoru by se po kliknutí převyhodnotil a skočil jinam.
+    const articles = page.getByRole("article");
+    const total = await articles.count();
+    let card = null;
+    for (let i = 0; i < total; i++) {
+      if (await articles.nth(i).getByRole("button", { name: "Dát lajk" }).count()) {
+        card = articles.nth(i);
+        break;
+      }
+    }
+    expect(card, "očekávám aspoň jeden neolajkovaný post").not.toBeNull();
+
+    const likeButton = card!.getByRole("button", { name: "Dát lajk" });
     const countBefore = Number(await likeButton.textContent());
     await likeButton.click();
-    // optimistická odezva
-    await expect(page.getByRole("button", { name: "Zrušit lajk" }).first()).toHaveText(String(countBefore + 1));
+    // optimistická odezva ve stejné kartě
+    await expect(card!.getByRole("button", { name: "Zrušit lajk" })).toHaveText(String(countBefore + 1));
     // unlike vrátí zpět
-    await page.getByRole("button", { name: "Zrušit lajk" }).first().click();
-    await expect(page.getByRole("button", { name: "Dát lajk" }).first()).toHaveText(String(countBefore));
+    await card!.getByRole("button", { name: "Zrušit lajk" }).click();
+    await expect(card!.getByRole("button", { name: "Dát lajk" })).toHaveText(String(countBefore));
   });
 
   test("vytvoření postu s cropem 4:5 → profil grid → komentář → notifikace autorovi", async ({ page }) => {
@@ -31,10 +44,18 @@ test.describe("Sociální vrstva", () => {
     await page.locator('input[type="file"]').setInputFiles(join(__dirname, "..", "..", "prisma", "seed-images", "dish-cake-sq.jpg"));
     await page.getByRole("radio", { name: "4:5 portrét" }).click();
     await page.getByRole("button", { name: "Použít výřez" }).click();
-    await page.getByLabel("Popisek").fill("Testovací dort z e2e 🍰");
-    await page.getByRole("button", { name: "Publikovat" }).click();
+    // Počkej, až upload doběhne a objeví se náhled (jinak fill caption závodí s re-renderem)
+    await expect(page.getByAltText("Náhled fotky")).toBeVisible();
+    const caption = page.getByLabel("Popisek");
+    await caption.fill("Testovací dort z e2e 🍰");
+    // Publikovat se odemkne až po nastavení preview; ověř, že caption drží hodnotu před submitem
+    await expect(caption).toHaveValue("Testovací dort z e2e 🍰");
+    const publish = page.getByRole("button", { name: "Publikovat" });
+    await expect(publish).toBeEnabled();
+    await publish.click();
     await expect(page).toHaveURL(/\/post\/[a-z0-9]+/);
-    await expect(page.getByText("Testovací dort z e2e 🍰")).toBeVisible();
+    // scope na obsah stránky — text je i ve skrytém route-announceru (titulek)
+    await expect(page.getByRole("main").getByText("Testovací dort z e2e 🍰")).toBeVisible();
     const postUrl = page.url();
 
     // fotka je v gridu profilu
