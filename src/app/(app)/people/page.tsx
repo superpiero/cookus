@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { CITIES } from "@/lib/const";
+import { ALL_SKILLS } from "@/lib/skills";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -61,7 +62,19 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
       </div>
 
       <form className="grid gap-3 rounded-card border-2 border-vinyl bg-porcelain p-4 shadow-diner sm:grid-cols-4" action="/people" method="get">
-        <Input name="skill" defaultValue={filters.skill ?? ""} placeholder="Dovednost (např. latte art)" aria-label="Dovednost" />
+        <Input
+          name="skill"
+          defaultValue={filters.skill ?? ""}
+          placeholder="Dovednost (např. latte art)"
+          aria-label="Dovednost"
+          list="people-skill-suggestions"
+          autoComplete="off"
+        />
+        <datalist id="people-skill-suggestions">
+          {ALL_SKILLS.map((skill) => (
+            <option key={skill} value={skill} />
+          ))}
+        </datalist>
         <Select name="city" defaultValue={filters.city ?? ""} aria-label="Město">
           <option value="">Celá ČR</option>
           {CITIES.map((c) => (

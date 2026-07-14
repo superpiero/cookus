@@ -15,7 +15,7 @@
 ### 1.2 Profil
 - Veřejná stránka `/p/[handle]`: hlavička (avatar, jméno, headline, město, badge druhu účtu; osoba: „hledám práci“ při openToWork; podnik: kategorie, web, badge **„Ověřený podnik“** pokud `verified`), tlačítka **Napsat zprávu** (přihlášeným, ne sobě) a **Upravit profil** (vlastník).
 - Taby: **Fotky** (grid 3 sloupce), **Praxe** (osoba: timeline; podnik: potvrzení lidé, kteří u něj pracovali), **Info** (bio/resumé, skills), u podniku **Pozice** (otevřené inzeráty).
-- Skills: tagy, max 15.
+- Skills: tagy, max 15. Vstup našeptává z kurátorovaného katalogu ~100 gastro dovedností (`src/lib/skills.ts`, 8 kategorií: kuchyně, pekárna & cukrárna, bar, káva, servis, vedení & provoz, jazyky, certifikace) — sjednocuje zápis pro filtr v `/people`; vlastní text zůstává povolen.
 - **AC:** profil veřejně čitelný bez loginu (SEO); změny ihned (revalidace).
 - **EC:** neexistující handle → 404; prázdné stavy všech tabů s CTA pro vlastníka.
 
