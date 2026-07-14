@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { PrismaClient } from "@prisma/client";
 import { runLiveDemoSeed } from "@/lib/demo-seed";
 
 export const runtime = "nodejs";
@@ -31,10 +31,22 @@ async function handle(req: Request) {
     );
   }
 
+  // Vlastní klient s vyšším limitem připojení — seed vkládá fotky paralelně
+  // a s výchozím connection_limit=1 by se do serverless limitu nemusel vejít.
+  const baseUrl = process.env.DATABASE_URL ?? "";
+  const separator = baseUrl.includes("?") ? "&" : "?";
+  const db = new PrismaClient({
+    datasources: { db: { url: `${baseUrl}${separator}connection_limit=10&pool_timeout=60` } },
+  });
+
+  const startedAt = Date.now();
   try {
     await runLiveDemoSeed(db);
+    const [users, posts, jobs] = await Promise.all([db.user.count(), db.post.count(), db.job.count()]);
     return Response.json({
       ok: true,
+      seconds: Math.round((Date.now() - startedAt) / 1000),
+      counts: { ucty: users, fotky: posts, pozice: jobs },
       message:
         "Hotovo! Živý demo obsah je nahraný. Heslo všech demo účtů: cookus123 (admin: admin@cookus.cz). " +
         "Doporučení: smaž teď env proměnnou SEED_TOKEN, ať endpoint zmizí.",
@@ -42,6 +54,8 @@ async function handle(req: Request) {
   } catch (err) {
     console.error("[seed:error]", err);
     return Response.json({ error: "Seed selhal — mrkni do logů funkce." }, { status: 500 });
+  } finally {
+    await db.$disconnect();
   }
 }
 

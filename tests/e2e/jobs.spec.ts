@@ -18,9 +18,12 @@ test.describe("Job board", () => {
     await login(page, "jirka@cookus.cz");
     await page.goto("/jobs?city=Brno");
     await page.getByText("Barista/ka — specialty coffee").click();
-    await page.getByRole("button", { name: "Přihlásit se profilem" }).click();
-    await page.getByLabel("Zpráva (volitelná)").fill("Kafe je moje druhá láska hned po omáčkách.");
-    await page.getByRole("button", { name: "Odeslat přihlášku" }).click();
+    // Retry-safe: pokud předchozí pokus přihlášku už odeslal, krok se přeskočí
+    if (!(await page.getByText(/Už ses přihlásil/).count())) {
+      await page.getByRole("button", { name: "Přihlásit se profilem" }).click();
+      await page.getByLabel("Zpráva (volitelná)").fill("Kafe je moje druhá láska hned po omáčkách.");
+      await page.getByRole("button", { name: "Odeslat přihlášku" }).click();
+    }
     // Po odeslání revalidace nahradí formulář stavem přihlášky (docs/03 §3.3)
     await expect(page.getByText(/Už ses přihlásil/)).toBeVisible();
 

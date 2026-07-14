@@ -9,8 +9,8 @@
     "start": "next start",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:seed:live": "tsx prisma/seed-live.ts",
+    "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
+    "db:seed:live": "tsx --env-file-if-exists=.env prisma/seed-live.ts",
     "db:reset": "prisma migrate reset --force",
     "test:unit": "vitest run",
     "test:e2e": "playwright test"

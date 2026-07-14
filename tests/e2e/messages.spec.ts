@@ -12,7 +12,7 @@ test.describe("Zprávy", () => {
     await page.getByLabel("Zpráva").fill("Super, ve čtvrtek v 15:00 na místě");
     await page.getByRole("button", { name: "Vložit 🙌" }).click();
     await page.getByRole("button", { name: "Odeslat zprávu" }).click();
-    await expect(page.getByText("Super, ve čtvrtek v 15:00 na místě🙌")).toBeVisible();
+    await expect(page.getByText("Super, ve čtvrtek v 15:00 na místě🙌").first()).toBeVisible();
   });
 
   test("zpráva z profilu založí konverzaci a příjemce ji dostane", async ({ page }) => {
@@ -22,7 +22,7 @@ test.describe("Zprávy", () => {
     await expect(page).toHaveURL(/\/messages\/[a-z0-9]+/);
     await page.getByLabel("Zpráva").fill("Ahoj Marto, nesháníš someliéra na akce?");
     await page.getByRole("button", { name: "Odeslat zprávu" }).click();
-    await expect(page.getByText(/nesháníš someliéra/)).toBeVisible();
+    await expect(page.getByText(/nesháníš someliéra/).first()).toBeVisible();
 
     // příjemkyně vidí konverzaci i unread badge v navigaci
     await page.getByRole("button", { name: "Menu účtu" }).click();
@@ -31,6 +31,6 @@ test.describe("Zprávy", () => {
     await expect(page.getByLabel(/Zprávy \(\d+ nepřečtených\)/)).toBeVisible();
     await page.goto("/messages");
     await page.getByText("Ondřej Vlk").click();
-    await expect(page.getByText(/nesháníš someliéra/)).toBeVisible();
+    await expect(page.getByText(/nesháníš someliéra/).first()).toBeVisible();
   });
 });

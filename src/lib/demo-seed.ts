@@ -153,14 +153,18 @@ export async function runLiveDemoSeed(db: PrismaClient): Promise<void> {
   void admin;
 
   console.log("Avatary…");
-  await db.user.update({ where: { id: lokalek.id }, data: { avatarImageId: await image(lokalek.id, "dish-beer-sq") } });
-  await db.user.update({ where: { id: vasemaso.id }, data: { avatarImageId: await image(vasemaso.id, "dish-steak-sq") } });
-  await db.user.update({ where: { id: savojka.id }, data: { avatarImageId: await image(savojka.id, "place-cafe-sq") } });
-  await db.user.update({ where: { id: esicko.id }, data: { avatarImageId: await image(esicko.id, "dish-bread-sq") } });
-  await db.user.update({ where: { id: vosihnizdo.id }, data: { avatarImageId: await image(vosihnizdo.id, "dish-donut-sq") } });
-  await db.user.update({ where: { id: barmozna.id }, data: { avatarImageId: await image(barmozna.id, "place-bar-sq") } });
-  await db.user.update({ where: { id: piktogram.id }, data: { avatarImageId: await image(piktogram.id, "dish-coffee-sq") } });
-  await db.user.update({ where: { id: nomnom.id }, data: { avatarImageId: await image(nomnom.id, "dish-forage-sq") } });
+  const setAvatar = async (user: User, file: string) =>
+    db.user.update({ where: { id: user.id }, data: { avatarImageId: await image(user.id, file) } });
+  await Promise.all([
+    setAvatar(lokalek, "dish-beer-sq"),
+    setAvatar(vasemaso, "dish-steak-sq"),
+    setAvatar(savojka, "place-cafe-sq"),
+    setAvatar(esicko, "dish-bread-sq"),
+    setAvatar(vosihnizdo, "dish-donut-sq"),
+    setAvatar(barmozna, "place-bar-sq"),
+    setAvatar(piktogram, "dish-coffee-sq"),
+    setAvatar(nomnom, "dish-forage-sq"),
+  ]);
 
   console.log("Skills…");
   const skills: [User, string[]][] = [
@@ -246,20 +250,20 @@ export async function runLiveDemoSeed(db: PrismaClient): Promise<void> {
     { author: puncoska, file: "dish-svickova-pt", caption: "Demi-glace, hodina 72 z 72. Zkratky jsou pro navigace.", days: 6 },
     { author: tuplak, file: "dish-beer-sq", caption: "Dneska večer za barem. Pěna bude, spěch ne 🍺", days: 0 },
   ];
-  const createdPosts: { id: string; authorId: string }[] = [];
-  for (const p of posts) {
-    const imageId = await image(p.author.id, p.file);
-    createdPosts.push(
-      await db.post.create({
+  // Paralelně — fotky jsou datově nejtěžší část seedu (timeout na serverless)
+  const createdPosts: { id: string; authorId: string }[] = await Promise.all(
+    posts.map(async (p) => {
+      const imageId = await image(p.author.id, p.file);
+      return db.post.create({
         data: {
           authorId: p.author.id, imageId, caption: p.caption,
           aspect: p.file.endsWith("-pt") ? "PORTRAIT" : "SQUARE",
           createdAt: daysAgo(p.days, 2),
         },
         select: { id: true, authorId: true },
-      })
-    );
-  }
+      });
+    })
+  );
 
   console.log("Lajky a komentáře…");
   const everyone = [kaprik, pohledny, zpatecka, puncoska, vidlicka, tuplak, vlachynka, rvamsay, redkvicka, olivovy,
@@ -451,6 +455,232 @@ export async function runLiveDemoSeed(db: PrismaClient): Promise<void> {
       { userId: rvamsay.id, actorId: lokalek.id, type: "MESSAGE", conversationId: conv1.id, createdAt: daysAgo(0, 5), readAt: daysAgo(0, 4) },
       { userId: redkvicka.id, actorId: nomnom.id, type: "APPLICATION_STATUS", jobId: createdJobs[6]!.id, createdAt: daysAgo(3) },
       { userId: barmozna.id, actorId: zpatecka.id, type: "EXPERIENCE_REQUEST", createdAt: daysAgo(2) },
+    ],
+  });
+
+  /* ============ VLNA 2 — další várka lidí a obsahu ============ */
+  console.log("Vlna 2: lidé…");
+  const anicka = await mkUser({
+    email: "anicka@cookus.cz", handle: "anicka-kvedlacka", name: "Anička Kvedlačka", kind: "PERSON",
+    city: "Praha", openToWork: true,
+    headline: "Komí cukrárny. Kvedlám, tedy jsem.",
+    bio: "Peču i o půlnoci, protože entremet nečeká. Hledám cukrárnu, kde se nebojí laminovat ve tři ráno.",
+  });
+  const standa = await mkUser({
+    email: "standa@cookus.cz", handle: "standa-skvarek", name: "Standa Škvarek", kind: "PERSON",
+    city: "Ostrava",
+    headline: "Grilmistr. Uhlí je koření.",
+    bio: "Low & slow je životní filozofie. Čtrnáct hodin u smokeru není práce, to je meditace s teploměrem.",
+  });
+  const mana = await mkUser({
+    email: "mana@cookus.cz", handle: "mana-cednik", name: "Máňa Cedník", kind: "PERSON",
+    city: "Brno", openToWork: true,
+    headline: "Ze dřezu na plac. Dřez mě naučil pokoru.",
+    bio: "Dva roky jsem myla nádobí a koukala kuchařům pod ruce. Teď chci vlastní prkénko. Rychlé ruce, čistý cedník, žádné kecy.",
+  });
+  const guy = await mkUser({
+    email: "guy@cookus.cz", handle: "guy-friteza", name: "Guy Fritéza", kind: "PERSON",
+    city: "Jinde v ČR",
+    headline: "Starosta Flavortownu. Smažíme všechno včetně názorů.",
+    bio: "Sluneční brýle na zátylku, plameny na košili, donut místo housky. Jednou jsem usmažil i polévku a bylo to VOLCANIC.",
+  });
+  const nigella = await mkUser({
+    email: "nigella@cookus.cz", handle: "nigella-lzicka", name: "Nigella Lžička", kind: "PERSON",
+    city: "Jinde v ČR",
+    headline: "Vařím pomalu, mluvím pomaleji. Máslo nikdy nevynechám.",
+    bio: "Půlnoční nájezdy na lednici považuji za legitimní chod. Recept bez másla je jen seznam surovin.",
+  });
+  const massimo = await mkUser({
+    email: "massimo@cookus.cz", handle: "massimo-brambora", name: "Massimo Brambora", kind: "PERSON",
+    city: "Jinde v ČR",
+    headline: "Jejda! Upustil jsem citronový koláč. A dostal za to hvězdu.",
+    bio: "Tortellini je meditace o 36 záhybech. Parmazán zraje, já taky. Chyby na talíři jsou umění, když jim dáš jméno.",
+  });
+
+  const utriskvarku = await mkUser({
+    email: "utriskvarku@cookus.cz", handle: "u-tri-skvarku", name: "U Tří Škvarků", kind: "INSTITUTION",
+    category: "RESTAURACE", city: "Ostrava", verified: true,
+    headline: "Škvarková pomazánka, co spraví den",
+    bio: "Poctivá ostravská klasika od roku 1974. Škvarky smažíme dvakrát denně a stejně dojdou. Piva máme, kolik uneseš.",
+  });
+  const osteria = await mkUser({
+    email: "osteria@cookus.cz", handle: "osteria-frantova", name: "Osteria Frantova", kind: "INSTITUTION",
+    category: "RESTAURACE", city: "Jinde v ČR",
+    headline: "Tortellini jak od nonny, 12 míst, sen o třech hvězdách",
+    bio: "Malá osteria, velká kuchyně. Nonna kontroluje záhyby osobně a nemilosrdně. Rezervace na půl roku dopředu, ale za rohem se občas uvolní židle.",
+  });
+  const vidlickanuz = await mkUser({
+    email: "vidlickanuz@cookus.cz", handle: "bistro-vidlicka-nuz", name: "Bistro Vidlička & Nůž", kind: "INSTITUTION",
+    category: "BISTRO", city: "Brno",
+    headline: "Brunch, co tě postaví na nohy",
+    bio: "Vejce benedikt od 8:00, espresso, co tě přiková zpátky k zemi. Víkendová fronta je brněnský folklór.",
+  });
+
+  console.log("Vlna 2: avatary, skills…");
+  await Promise.all([
+    setAvatar(utriskvarku, "dish-beer-pt"),
+    setAvatar(osteria, "dish-pasta-sq"),
+    setAvatar(vidlickanuz, "dish-eggs-sq"),
+  ]);
+  const skills2: [User, string[]][] = [
+    [anicka, ["Jemné pečivo", "Entremety", "Noční směny", "Kvedlání"]],
+    [standa, ["Gril & BBQ", "Uzení", "Low & slow", "Práce s ohněm"]],
+    [mana, ["Mytí nádobí rychlostí světla", "Mise en place", "Studená kuchyně", "Pokora"]],
+    [guy, ["Fritování", "Burgery", "Sluneční brýle", "Flavortown"]],
+    [nigella, ["Máslo", "Pomalé vaření", "Dezerty", "Vyprávění u plotny"]],
+    [massimo, ["Tortellini (36 záhybů)", "Parmazán", "Upuštěné koláče", "Michelin"]],
+  ];
+  for (const [user, names] of skills2) {
+    await db.skill.createMany({ data: names.map((name, position) => ({ userId: user.id, name, position })) });
+  }
+
+  console.log("Vlna 2: praxe…");
+  await db.experience.create({
+    data: {
+      personId: mana.id, institutionId: utriskvarku.id, institutionName: utriskvarku.name,
+      role: "Myčka nádobí & příprava", startDate: daysAgo(900), endDate: daysAgo(30),
+      status: "CONFIRMED", respondedAt: daysAgo(20),
+      report: "Máňa umyla za směnu 800 talířů a ještě stihla krájet cibuli. Ta holka má systém. Pusťte ji na plac, i když nás to bolí.",
+    },
+  });
+  await db.experience.create({
+    data: {
+      personId: massimo.id, institutionId: osteria.id, institutionName: osteria.name,
+      role: "Šéfkuchař & spolumajitel", startDate: daysAgo(4000), endDate: null,
+      status: "CONFIRMED", respondedAt: daysAgo(100),
+      report: "Massimo jednou upustil koláč a tři hosté plakali štěstím. Génius, co vypadá, že se ztratil, ale ví přesně, kde je.",
+    },
+  });
+  await db.experience.create({
+    data: {
+      personId: anicka.id, institutionId: vosihnizdo.id, institutionName: vosihnizdo.name,
+      role: "Komí cukrárny", startDate: daysAgo(400), endDate: null,
+      status: "PENDING",
+    },
+  });
+  await db.experience.create({
+    data: {
+      personId: standa.id, institutionName: "Food truck Škvarková horečka",
+      role: "Pitmaster", startDate: daysAgo(1200), endDate: daysAgo(300),
+      status: "UNLINKED",
+    },
+  });
+  await db.experience.create({
+    data: {
+      personId: guy.id, institutionName: "Flavortown (někde v Americe)",
+      role: "Starosta & fritér", startDate: daysAgo(5000), endDate: null,
+      status: "UNLINKED",
+    },
+  });
+
+  console.log("Vlna 2: posty…");
+  const posts2 = await Promise.all(
+    ([
+      { author: standa, file: "dish-steak-pt", caption: "Low & slow, hodina 14 ze 14. Uhlí je koření 🔥", days: 0 },
+      { author: anicka, file: "dish-cake-pt", caption: "Půlnoční směna. Entremet do svítání, kvedlačka v ruce 🌙", days: 2 },
+      { author: mana, file: "dish-ramen-sq", caption: "První služba na teplé! Dřez mi drží palce 🤞", days: 1 },
+      { author: guy, file: "dish-burger-pt", caption: "WELCOME TO FLAVORTOWN, PRAHO! Dneska smažíme všechno 🍔🔥", days: 1 },
+      { author: nigella, file: "dish-croissant-sq", caption: "Máslo. Víc másla. Ještě víc másla. Perfektní 🧈", days: 3 },
+      { author: massimo, file: "dish-pasta-pt", caption: "Tortellini jako meditace. 36 záhybů, žádný spěch.", days: 4 },
+      { author: utriskvarku, file: "dish-beer-sq", caption: "Škvarky došly v 18:02. Rekord. Zítra smažíme dvojnásob 🍺", days: 0 },
+      { author: osteria, file: "dish-cake-sq", caption: "Jejda! Upustili jsme citronový koláč. Zase. Schválně 🍋", days: 5 },
+      { author: vidlickanuz, file: "dish-eggs-pt", caption: "Benedikt jede od 8:00. Fronta je folklór, stojí za to 🍳", days: 2 },
+    ] as { author: User; file: string; caption: string; days: number }[]).map(async (p) => {
+      const imageId = await image(p.author.id, p.file);
+      return db.post.create({
+        data: {
+          authorId: p.author.id, imageId, caption: p.caption,
+          aspect: p.file.endsWith("-pt") ? "PORTRAIT" : "SQUARE",
+          createdAt: daysAgo(p.days, 1),
+        },
+        select: { id: true, authorId: true },
+      });
+    })
+  );
+
+  const everyone2 = [...everyone, anicka, standa, mana, guy, nigella, massimo, utriskvarku, osteria, vidlickanuz];
+  for (const [index, post] of posts2.entries()) {
+    const likers = everyone2.filter((u, i) => u.id !== post.authorId && (i + index) % 3 === 0);
+    await db.like.createMany({ data: likers.map((liker) => ({ postId: post.id, userId: liker.id })) });
+  }
+  const comments2: { post: number; author: User; body: string }[] = [
+    { post: 3, author: rvamsay, body: "This is an idiot sandwich. A chutná skvěle. Jsem zmatený." },
+    { post: 0, author: vasemaso, body: "„Uhlí je koření“ si píšeme na tabuli. Díky, mistře." },
+    { post: 2, author: kaprik, body: "Tohle je přesně ta cesta. Z dřezu na plac. Držíme!" },
+    { post: 5, author: vidlicka, body: "36 záhybů?! Já jich dělám dvanáct a brečím u toho." },
+    { post: 4, author: olivovy, body: "Nigello, to máslo… pukka. Respekt." },
+    { post: 7, author: redkvicka, body: "Upuštěný koláč je taky fermentace osudu. Uznávám." },
+  ];
+  for (const c of comments2) {
+    await db.comment.create({ data: { postId: posts2[c.post]!.id, authorId: c.author.id, body: c.body } });
+  }
+
+  console.log("Vlna 2: inzeráty a přihlášky…");
+  const jobSkvarky = await db.job.create({
+    data: {
+      institutionId: utriskvarku.id, title: "Kuchař/ka na škvarky a ostravskou klasiku",
+      category: "KUCHAR", employmentType: "PLNY_UVAZEK", city: "Ostrava",
+      salaryMin: 35000, salaryMax: 42000, salaryPeriod: "MESIC",
+      description:
+        "Škvarková pomazánka podle receptu z roku 1974 — naučíme, ale recept se nevynáší.\n\nSměny bez nočních, pivo po směně v ceně kultury podniku. Hledáme někoho, kdo bere klasiku vážně a sebe míň.",
+      createdAt: daysAgo(1),
+    },
+    select: { id: true },
+  });
+  await db.job.create({
+    data: {
+      institutionId: osteria.id, title: "Tvůrce/kyně tortellin (36 záhybů)",
+      category: "KUCHAR", employmentType: "PLNY_UVAZEK", city: "Jinde v ČR",
+      salaryMin: 50000, salaryMax: 65000, salaryPeriod: "MESIC",
+      description:
+        "Záhyb je modlitba. Hledáme ruce, které to chápou.\n\nNonna tě vyzkouší osobně — přines vlastní vál. Kdo udělá 36 záhybů pod minutu, má podepsáno.",
+      createdAt: daysAgo(3),
+    },
+  });
+  await db.job.create({
+    data: {
+      institutionId: vidlickanuz.id, title: "Brunch kuchař/ka — víkendy",
+      category: "KUCHAR", employmentType: "BRIGADA", city: "Brno",
+      salaryMin: 190, salaryMax: 230, salaryPeriod: "HODINA",
+      description:
+        "Vejce benedikt poslepu, palačinky bez váhy, klid v ranní špičce.\n\nVíkendy 7–15, spropitné se dělí férově, káva zdarma bez limitu (budeš ji potřebovat).",
+      createdAt: daysAgo(2),
+    },
+  });
+  await db.application.create({
+    data: {
+      jobId: jobSkvarky.id, applicantId: mana.id,
+      message: "Dřez mě vytrénoval, cibule mě nezlomí. Škvarky beru jako poslání.",
+      status: "SHORTLISTED", createdAt: daysAgo(0, 8),
+    },
+  });
+
+  console.log("Vlna 2: přátelství, šťouchnutí, konverzace…");
+  await friendship(standa, utriskvarku);
+  await friendship(massimo, osteria);
+  await friendship(guy, rvamsay);
+  await friendship(nigella, olivovy);
+  await friendship(anicka, vidlicka);
+  await friendship(mana, tuplak);
+  await friendship(guy, pohledny, false); // čekající žádost pro Pohledného
+
+  await db.poke.create({ data: { fromId: nigella.id, toId: rvamsay.id, createdAt: daysAgo(0, 3) } });
+  await db.poke.create({ data: { fromId: guy.id, toId: olivovy.id, createdAt: daysAgo(0, 7) } });
+
+  const convGuy = await db.conversation.create({ data: { ...pair(guy.id, rvamsay.id), lastMessageAt: daysAgo(0, 1) } });
+  for (const m of [
+    { sender: guy.id, body: "Gordone, přijeď do Flavortownu — usmažím ti řízek v donutu 🍩🔥", days: 0, hours: 4 },
+    { sender: rvamsay.id, body: "To je to nejodpornější, co jsem kdy slyšel. V kolik?", days: 0, hours: 1 },
+  ]) {
+    await db.message.create({ data: { conversationId: convGuy.id, senderId: m.sender, body: m.body, createdAt: daysAgo(m.days, m.hours) } });
+  }
+
+  await db.notification.createMany({
+    data: [
+      { userId: vosihnizdo.id, actorId: anicka.id, type: "EXPERIENCE_REQUEST", createdAt: daysAgo(1) },
+      { userId: utriskvarku.id, actorId: mana.id, type: "APPLICATION", jobId: jobSkvarky.id, createdAt: daysAgo(0, 8) },
+      { userId: rvamsay.id, actorId: nigella.id, type: "POKE", createdAt: daysAgo(0, 3) },
+      { userId: rvamsay.id, actorId: guy.id, type: "MESSAGE", conversationId: convGuy.id, createdAt: daysAgo(0, 4), readAt: daysAgo(0, 2) },
     ],
   });
 

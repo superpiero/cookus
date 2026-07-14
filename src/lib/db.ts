@@ -4,6 +4,10 @@ import { PrismaClient } from "@prisma/client";
 // globalThis přežívá v rámci téže instance a brání vyčerpání DB connections.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const db = globalForPrisma.prisma ?? new PrismaClient();
+export const db =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: ["warn", "error"], // P2024 (vyčerpaný pool) a podobné problémy musí být vidět v lozích
+  });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;

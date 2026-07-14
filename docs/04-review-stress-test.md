@@ -53,3 +53,4 @@ Dále schéma neumělo splnit sliby specs (onDelete, dedup notifikací, indexy) 
 3. **E-mail enumeration při registraci** — akceptováno, mitigace rate limitem.
 4. **Fake podniky bez badge ověření** — reference od neověřeného podniku je viditelně slabší; plná verifikace v roadmapě.
 5. **Admin moderace bez report tlačítka** — při MVP objemu stačí; report v v2.
+6. **Flakiness e2e v CI kontejneru** — na sdíleném stroji (browser+server+DB) se ~1× za běh zasekne klientská aplikace odpovědi server action (síť i server ověřeny trace analýzou: 200/30 ms). Mitigace: `retries: 2` + idempotentní (retry-safe) testy, `--keepAliveTimeout 70000` pro `next start`. V produkci (Vercel serverless) se runtime liší a symptom nebyl pozorován.

@@ -9,8 +9,19 @@ async function logout(page: import("@playwright/test").Page) {
 
 test.describe("Přátelé a feed přátel", () => {
   test("žádost → přijetí → chronologický feed přátel + notifikace", async ({ page }) => {
-    // Ondra požádá Jirku o přátelství z profilu
+    // Retry-safe úklid: odstranit případný vztah ondra↔jirka z předchozího pokusu
     await login(page, "ondra@cookus.cz");
+    await page.goto("/friends");
+    for (const label of ["Odebrat", "Zrušit žádost", "Odmítnout"]) {
+      const button = page.getByRole("button", { name: label }).first();
+      if (await button.count()) {
+        page.once("dialog", (d) => d.accept());
+        await button.click();
+        await expect(button).toBeHidden();
+      }
+    }
+
+    // Ondra požádá Jirku o přátelství z profilu
     await page.goto("/p/jirka-kuchar");
     await page.getByRole("button", { name: "Přidat do přátel" }).click();
     await expect(page.getByRole("button", { name: /Žádost odeslána/ })).toBeVisible();
@@ -33,7 +44,7 @@ test.describe("Přátelé a feed přátel", () => {
     await logout(page);
     await login(page, "ondra@cookus.cz");
     await page.goto("/notifications");
-    await expect(page.getByText(/Jirka Novák přijal\/a tvoji žádost/)).toBeVisible();
+    await expect(page.getByText(/Jirka Novák přijal\/a tvoji žádost/).first()).toBeVisible();
 
     // a na profilu Jirky teď vidí stav Přátelé
     await page.goto("/p/jirka-kuchar");
@@ -61,7 +72,7 @@ test.describe("Přátelé a feed přátel", () => {
     await logout(page);
     await login(page, "tomas@cookus.cz");
     await page.goto("/notifications");
-    await expect(page.getByText(/Klára Veselá tě šťouchl\/a/)).toBeVisible();
+    await expect(page.getByText(/Klára Veselá tě šťouchl\/a/).first()).toBeVisible();
     await page.getByRole("button", { name: "👉 Šťouchnout zpátky" }).click();
     await expect(page.getByRole("button", { name: /Šťouchnuto!/ })).toBeVisible();
 
@@ -69,6 +80,6 @@ test.describe("Přátelé a feed přátel", () => {
     await logout(page);
     await login(page, "klara@cookus.cz");
     await page.goto("/notifications");
-    await expect(page.getByText(/Tomáš Král tě šťouchl\/a/)).toBeVisible();
+    await expect(page.getByText(/Tomáš Král tě šťouchl\/a/).first()).toBeVisible();
   });
 });

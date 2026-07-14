@@ -13,15 +13,16 @@ test.describe("Ověřená praxe (differentiator)", () => {
   test("podnik potvrdí praxi s reportem → badge na profilu", async ({ page }) => {
     await login(page, "hotel@cookus.cz");
     await page.goto("/verifications");
-    await expect(page.getByText("Karel Dvořák")).toBeVisible();
-
-    await page
-      .getByLabel(/Report \/ reference/)
-      .first()
-      .fill("Spolehlivý parťák na teplé kuchyni, sezónu odjel bez zaváhání.");
-    await page.getByRole("button", { name: "Potvrdit praxi" }).first().click();
-    // Po potvrzení revalidace odebere kartu ze seznamu žádostí (docs/03 §1.3)
-    await expect(page.getByText("Karel Dvořák")).toBeHidden();
+    // Retry-safe: pokud předchozí pokus už potvrdil, žádost v seznamu není
+    if (await page.getByText("Karel Dvořák").count()) {
+      await page
+        .getByLabel(/Report \/ reference/)
+        .first()
+        .fill("Spolehlivý parťák na teplé kuchyni, sezónu odjel bez zaváhání.");
+      await page.getByRole("button", { name: "Potvrdit praxi" }).first().click();
+      // Po potvrzení revalidace odebere kartu ze seznamu žádostí (docs/03 §1.3)
+      await expect(page.getByText("Karel Dvořák")).toBeHidden();
+    }
 
     // profil Karla teď ukazuje 2× ověřeno
     await page.goto("/p/karel-dvorak?tab=praxe");
@@ -41,12 +42,12 @@ test.describe("Ověřená praxe (differentiator)", () => {
     await form.getByLabel("Měsíc konce").selectOption("11");
     await form.getByLabel("Rok konce").selectOption("2019");
     await form.getByRole("button", { name: "Přidat praxi" }).click();
-    // úspěch → formulář se zavře a záznam se objeví v seznamu
-    await expect(page.getByText(/Motorest Skřet/)).toBeVisible();
+    // úspěch → formulář se zavře a záznam se objeví v seznamu (retry může vytvořit duplicitu → first)
+    await expect(page.getByText(/Motorest Skřet/).first()).toBeVisible();
 
     await page.goto("/p/jirka-kuchar?tab=praxe");
-    await expect(page.getByText(/Motorest Skřet/)).toBeVisible();
-    await expect(page.getByText(/3\/2018 – 11\/2019/)).toBeVisible();
+    await expect(page.getByText(/Motorest Skřet/).first()).toBeVisible();
+    await expect(page.getByText(/3\/2018 – 11\/2019/).first()).toBeVisible();
   });
 
   test("validační chyba nesmaže rozepsaný formulář (regrese: Safari datum + React reset)", async ({ page }) => {
