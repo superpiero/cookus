@@ -10,14 +10,29 @@ import type { FormState } from "./auth";
 
 const MAX_PENDING_PER_PAIR = 3;
 
+// Měsíc a rok přes selecty — input type="month" nefunguje v Safari (docs/03 §1.3)
 const experienceSchema = z.object({
   institutionId: z.string().optional(),
   institutionName: z.string().trim().min(2, "Vyplň název podniku").max(80),
   role: z.string().trim().min(2, "Vyplň pozici").max(80),
-  startDate: z.string().regex(/^\d{4}-\d{2}$/, "Vyplň začátek (měsíc a rok)"),
-  endDate: z.string().regex(/^\d{4}-\d{2}$/).optional().or(z.literal("")),
+  startMonth: z.coerce.number({ message: "Vyber měsíc začátku" }).int().min(1).max(12),
+  startYear: z.coerce.number({ message: "Vyber rok začátku" }).int().min(1900).max(2100),
+  endMonth: z.union([z.literal(""), z.coerce.number().int().min(1).max(12)]).optional(),
+  endYear: z.union([z.literal(""), z.coerce.number().int().min(1900).max(2100)]).optional(),
   description: z.string().trim().max(1000, "Popis max 1000 znaků").optional(),
 });
+
+function parseExperienceDates(data: z.infer<typeof experienceSchema>):
+  | { startDate: Date; endDate: Date | null }
+  | { error: string } {
+  const startDate = new Date(Date.UTC(data.startYear, data.startMonth - 1, 1));
+  const hasEndMonth = typeof data.endMonth === "number";
+  const hasEndYear = typeof data.endYear === "number";
+  if (hasEndMonth !== hasEndYear) return { error: "U konce vyplň měsíc i rok — nebo nech obojí prázdné (trvá)." };
+  const endDate = hasEndMonth ? new Date(Date.UTC(data.endYear as number, (data.endMonth as number) - 1, 1)) : null;
+  if (endDate && endDate < startDate) return { error: "Konec nemůže být před začátkem." };
+  return { startDate, endDate };
+}
 
 async function requestVerification(experienceId: string, personName: string, institutionId: string) {
   const institution = await db.user.findUnique({
@@ -48,9 +63,9 @@ export async function addExperienceAction(_prev: FormState, formData: FormData):
   if (!parsed.success) return { error: parsed.error.issues[0]!.message };
   const data = parsed.data;
 
-  const startDate = new Date(`${data.startDate}-01T00:00:00Z`);
-  const endDate = data.endDate ? new Date(`${data.endDate}-01T00:00:00Z`) : null;
-  if (endDate && endDate < startDate) return { error: "Konec nemůže být před začátkem." };
+  const dates = parseExperienceDates(data);
+  if ("error" in dates) return { error: dates.error };
+  const { startDate, endDate } = dates;
 
   let institutionId: string | null = null;
   let institutionName = data.institutionName;

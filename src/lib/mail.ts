@@ -28,5 +28,12 @@ export async function sendMail(mail: Mail): Promise<void> {
 }
 
 export function appUrl(path: string) {
-  return `${process.env.APP_URL ?? "http://localhost:3000"}${path}`;
+  // Priorita: explicitní APP_URL → produkční doména od Vercelu → lokální vývoj.
+  // VERCEL_PROJECT_PRODUCTION_URL dodává Vercel automaticky (bez protokolu).
+  const base =
+    process.env.APP_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3000");
+  return `${base}${path}`;
 }
