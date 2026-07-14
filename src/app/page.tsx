@@ -11,8 +11,40 @@ import { Sparkle } from "@/components/ui/EmptyState";
 import { JobCard } from "@/components/jobs/JobCard";
 import { HowItWorks } from "@/components/home/HowItWorks";
 
-// ISR — čísla a pozice se obnovují po 5 minutách; Neon cold start neblokuje LCP (docs/04 #20)
-export const revalidate = 300;
+import { unstable_cache } from "next/cache";
+
+// Data homepage se cachují na 5 minut (stránka sama je dynamická kvůli session
+// v navigaci) — Neon cold start tak neblokuje LCP (docs/04 #20).
+const getHomeData = unstable_cache(
+  async () => {
+    const [personCount, institutionCount, jobCount, latestJobs] = await Promise.all([
+      db.user.count({ where: { kind: "PERSON" } }),
+      db.user.count({ where: { kind: "INSTITUTION" } }),
+      db.job.count({ where: { status: "OPEN" } }),
+      db.job.findMany({
+        where: { status: "OPEN" },
+        orderBy: { createdAt: "desc" },
+        take: 3,
+        select: {
+          id: true,
+          title: true,
+          category: true,
+          employmentType: true,
+          city: true,
+          salaryMin: true,
+          salaryMax: true,
+          salaryPeriod: true,
+          status: true,
+          createdAt: true,
+          institution: { select: { name: true, handle: true, verified: true, avatarImageId: true } },
+        },
+      }),
+    ]);
+    return { personCount, institutionCount, jobCount, latestJobs };
+  },
+  ["home-data"],
+  { revalidate: 300 }
+);
 
 const PERSONAS = [
   {
@@ -37,30 +69,9 @@ const PERSONAS = [
 
 export default async function HomePage() {
   const viewer = await getSessionUser();
-
-  const [personCount, institutionCount, jobCount, latestJobs] = await Promise.all([
-    db.user.count({ where: { kind: "PERSON" } }),
-    db.user.count({ where: { kind: "INSTITUTION" } }),
-    db.job.count({ where: { status: "OPEN" } }),
-    db.job.findMany({
-      where: { status: "OPEN" },
-      orderBy: { createdAt: "desc" },
-      take: 3,
-      select: {
-        id: true,
-        title: true,
-        category: true,
-        employmentType: true,
-        city: true,
-        salaryMin: true,
-        salaryMax: true,
-        salaryPeriod: true,
-        status: true,
-        createdAt: true,
-        institution: { select: { name: true, handle: true, verified: true, avatarImageId: true } },
-      },
-    }),
-  ]);
+  const { personCount, institutionCount, jobCount, latestJobs: cachedJobs } = await getHomeData();
+  // unstable_cache serializuje Date na string — obnovíme typ pro JobCard
+  const latestJobs = cachedJobs.map((job) => ({ ...job, createdAt: new Date(job.createdAt) }));
 
   // Sociální důkaz až nad prahem důvěryhodnosti (docs/04 #12)
   const showStats = personCount >= 50 && institutionCount >= 10 && jobCount >= 10;
