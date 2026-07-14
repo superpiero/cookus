@@ -34,7 +34,7 @@ export async function saveImage(
   height: number
 ): Promise<string> {
   const image = await db.imageBlob.create({
-    data: { ownerId, data, mime, width, height },
+    data: { ownerId, data: new Uint8Array(data) as Uint8Array<ArrayBuffer>, mime, width, height },
     select: { id: true },
   });
   return image.id;
