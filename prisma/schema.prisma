@@ -1,0 +1,330 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserKind {
+  PERSON
+  INSTITUTION
+}
+
+enum InstitutionCategory {
+  RESTAURACE
+  KAVARNA
+  BAR
+  HOTEL
+  BISTRO
+  CATERING
+  CUKRARNA
+  PIVOVAR
+  SKOLA
+  JINE
+}
+
+enum ExperienceStatus {
+  UNLINKED
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
+enum PostAspect {
+  SQUARE
+  PORTRAIT
+}
+
+enum JobCategory {
+  KUCHAR
+  CISNIK
+  BARISTA
+  BARMAN
+  CUKRAR
+  SOMELIER
+  PROVOZNI
+  RECEPCNI
+  POMOCNA_SILA
+  MANAZER
+  JINE
+}
+
+enum EmploymentType {
+  PLNY_UVAZEK
+  ZKRACENY_UVAZEK
+  BRIGADA
+  SEZONNI
+  STAZ
+}
+
+enum SalaryPeriod {
+  HODINA
+  MESIC
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+}
+
+enum ApplicationStatus {
+  SENT
+  VIEWED
+  SHORTLISTED
+  REJECTED
+  HIRED
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  MESSAGE
+  APPLICATION
+  APPLICATION_STATUS
+  EXPERIENCE_REQUEST
+  EXPERIENCE_CONFIRMED
+  EXPERIENCE_DECLINED
+}
+
+model User {
+  id            String               @id @default(cuid())
+  email         String               @unique
+  passwordHash  String
+  kind          UserKind
+  handle        String               @unique
+  name          String
+  headline      String?
+  bio           String?
+  city          String?
+  openToWork    Boolean              @default(false)
+  category      InstitutionCategory?
+  website       String?
+  verified      Boolean              @default(false)
+  isAdmin       Boolean              @default(false)
+  isBlocked     Boolean              @default(false)
+  avatarImageId String?
+  createdAt     DateTime             @default(now())
+
+  skills                 Skill[]
+  posts                  Post[]
+  likes                  Like[]
+  comments               Comment[]
+  jobs                   Job[]
+  applications           Application[]
+  experiencesAsPerson    Experience[]         @relation("expPerson")
+  experiencesAsInstitution Experience[]       @relation("expInstitution")
+  conversationsA         Conversation[]       @relation("convA")
+  conversationsB         Conversation[]       @relation("convB")
+  messages               Message[]
+  conversationReads      ConversationRead[]
+  notificationsReceived  Notification[]       @relation("notifRecipient")
+  notificationsActed     Notification[]       @relation("notifActor")
+  images                 ImageBlob[]
+  passwordResetTokens    PasswordResetToken[]
+}
+
+model Skill {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name     String
+  position Int    @default(0)
+
+  @@unique([userId, name])
+}
+
+model Experience {
+  id              String           @id @default(cuid())
+  personId        String
+  person          User             @relation("expPerson", fields: [personId], references: [id], onDelete: Cascade)
+  institutionId   String?
+  institution     User?            @relation("expInstitution", fields: [institutionId], references: [id], onDelete: SetNull)
+  institutionName String
+  role            String
+  startDate       DateTime
+  endDate         DateTime?
+  description     String?
+  status          ExperienceStatus @default(UNLINKED)
+  report          String?
+  respondedAt     DateTime?
+  createdAt       DateTime         @default(now())
+
+  notifications Notification[]
+
+  @@index([personId])
+  @@index([institutionId, status])
+}
+
+model ImageBlob {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  mime      String
+  data      Bytes
+  width     Int
+  height    Int
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
+}
+
+model Post {
+  id        String     @id @default(cuid())
+  authorId  String
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  imageId   String
+  caption   String?
+  aspect    PostAspect
+  createdAt DateTime   @default(now())
+
+  likes         Like[]
+  comments      Comment[]
+  notifications Notification[]
+
+  @@index([createdAt])
+  @@index([authorId, createdAt])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([postId, createdAt])
+}
+
+model Job {
+  id             String         @id @default(cuid())
+  institutionId  String
+  institution    User           @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  title          String
+  category       JobCategory
+  employmentType EmploymentType
+  city           String
+  address        String?
+  salaryMin      Int?
+  salaryMax      Int?
+  salaryPeriod   SalaryPeriod?
+  description    String
+  status         JobStatus      @default(OPEN)
+  createdAt      DateTime       @default(now())
+
+  applications  Application[]
+  notifications Notification[]
+
+  @@index([status, createdAt])
+  @@index([institutionId])
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  jobId       String
+  job         Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicantId String
+  applicant   User              @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  message     String?
+  status      ApplicationStatus @default(SENT)
+  createdAt   DateTime          @default(now())
+
+  notifications Notification[]
+
+  @@unique([jobId, applicantId])
+  @@index([applicantId, createdAt])
+}
+
+model Conversation {
+  id            String   @id @default(cuid())
+  userAId       String
+  userA         User     @relation("convA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId       String
+  userB         User     @relation("convB", fields: [userBId], references: [id], onDelete: Cascade)
+  lastMessageAt DateTime @default(now())
+
+  messages      Message[]
+  reads         ConversationRead[]
+  notifications Notification[]
+
+  @@unique([userAId, userBId])
+  @@index([userAId, lastMessageAt])
+  @@index([userBId, lastMessageAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body           String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+model ConversationRead {
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt     DateTime
+
+  @@id([conversationId, userId])
+}
+
+model Notification {
+  id             String           @id @default(cuid())
+  userId         String
+  user           User             @relation("notifRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actorId        String
+  actor          User             @relation("notifActor", fields: [actorId], references: [id], onDelete: Cascade)
+  type           NotificationType
+  postId         String?
+  post           Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  jobId          String?
+  job            Job?             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicationId  String?
+  application    Application?     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  experienceId   String?
+  experience     Experience?      @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  conversationId String?
+  conversation   Conversation?    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  readAt         DateTime?
+  createdAt      DateTime         @default(now())
+
+  @@index([userId, readAt, createdAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+}
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}

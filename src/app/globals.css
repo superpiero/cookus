@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+/* ============ Brand fonty (self-hosted, latin + latin-ext) ============ */
+@font-face {
+  font-family: "Alfa Slab One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/alfa-slab-one-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC;
+}
+@font-face {
+  font-family: "Alfa Slab One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/alfa-slab-one-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+1E00-1E9F, U+2020, U+20A0-20AB;
+}
+@font-face {
+  font-family: "Pacifico";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/pacifico-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC;
+}
+@font-face {
+  font-family: "Pacifico";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/pacifico-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+1E00-1E9F, U+2020, U+20A0-20AB;
+}
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 400 900;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/fonts/archivo-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC;
+}
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 400 900;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/fonts/archivo-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+1E00-1E9F, U+2020, U+20A0-20AB;
+}
+
+/* ============ Design tokeny (zdroj pravdy: brand guidelines kap. 07) ============ */
+@theme {
+  /* barvy */
+  --color-cherry: #d62828;
+  --color-ketchup: #a31621;
+  --color-vanilla: #fff6e9;
+  --color-porcelain: #fffdf6;
+  --color-vinyl: #221a15;
+  --color-smoke: #6e645c;
+  --color-chrome: #d8d3cb;
+  --color-chrome-light: #efe7da;
+  --color-mustard: #f2a93b;
+  --color-teal: #12756b;
+
+  /* typografie */
+  --font-display: "Alfa Slab One", ui-serif, serif;
+  --font-script: "Pacifico", cursive;
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+
+  /* tvar */
+  --radius-photo: 8px;
+  --radius-card: 14px;
+  --radius-modal: 20px;
+
+  /* smaltové stíny (hard offset — žádné rozmazané) */
+  --shadow-diner-sm: 3px 3px 0 0 var(--color-vinyl);
+  --shadow-diner: 4px 4px 0 0 var(--color-vinyl);
+  --shadow-diner-lg: 6px 6px 0 0 var(--color-vinyl);
+}
+
+/* ============ Základ ============ */
+body {
+  background: var(--color-vanilla);
+  color: var(--color-vinyl);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-cherry);
+  outline-offset: 2px;
+}
+
+/* ============ Brand utility ============ */
+@utility checker {
+  background: repeating-conic-gradient(var(--color-vinyl) 0% 25%, var(--color-vanilla) 0% 50%);
+  background-size: 24px 24px;
+}
+@utility checker-red {
+  background: repeating-conic-gradient(var(--color-ketchup) 0% 25%, var(--color-cherry) 0% 50%);
+  background-size: 24px 24px;
+}
+/* interaktivní smaltová karta: zvednout na hover, přitlačit na klik */
+@utility diner-press {
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  &:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--shadow-diner-lg);
+  }
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+}
