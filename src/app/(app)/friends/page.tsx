@@ -44,7 +44,12 @@ export default async function FriendsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <h1 className="font-display text-3xl">Přátelé</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-3xl">Přátelé</h1>
+        <Button href="/invite" variant="secondary" size="sm">
+          Pozvat do Cookus
+        </Button>
+      </div>
 
       {incoming.length > 0 && (
         <section>

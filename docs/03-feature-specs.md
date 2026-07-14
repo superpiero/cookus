@@ -67,6 +67,14 @@ Nízkoprahový signál zájmu à la klasický Facebook poke — „všiml/a jsem
 - **AC:** poke sám sobě zakázán; opakované šťouchnutí negeneruje další nepřečtenou notifikaci (dedup partial indexem, docs/02 §2.2); rate limit 30 šťouchnutí/hod/uživatel; poke se loguje (tabulka Poke) pro budoucí statistiky.
 - **EC:** šťouchnutí smazaného účtu → no-op; pokeback z notifikace, jejíž aktér mezitím smazal účet → notifikace zmizela cascadem, nic se nestane.
 
+### 2.6 Pozvánky (`/invite`)
+
+- Kdokoli přihlášený (osoba i podnik) může pozvat člověka/podnik do aplikace: e-mail + volitelný osobní vzkaz → odešle se pozvánka e-mailem a vznikne **sdílitelný odkaz** (`/register?invite=<id>`), který jde poslat i mimo e-mail.
+- Registrace přes pozvánku: banner „Zve tě X“, po dokončení se pozvánka označí jako přijatá a novému účtu automaticky přistane **žádost o přátelství od zvoucího** (nový uživatel nezačíná v prázdnu).
+- Seznam odeslaných pozvánek se stavy (čeká / registrace + kdo) + kopírování odkazu + zrušení čekající pozvánky.
+- **AC:** e-mail s existujícím účtem → chyba s nasměrováním na Lidi; duplicitní čekající pozvánka od téhož zvoucího → vrátí existující odkaz; rate limit 20 pozvánek/den/uživatel; přijetí pozvánky nikdy nesmí shodit registraci (best-effort).
+- **EC:** pozvánka smazaného zvoucího → cascade, odkaz vede na běžnou registraci bez banneru; už přijatá pozvánka → banner se nezobrazí, registrace proběhne normálně.
+
 ## 3. Job board
 
 ### 3.1 Inzerát

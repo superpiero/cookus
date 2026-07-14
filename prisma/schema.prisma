@@ -136,6 +136,22 @@ model User {
   friendshipsReceived    Friendship[]         @relation("friendAddressee")
   pokesSent              Poke[]               @relation("pokesSent")
   pokesReceived          Poke[]               @relation("pokesReceived")
+  invitationsSent        Invitation[]         @relation("inviter")
+  invitationsAccepted    Invitation[]         @relation("acceptedBy")
+}
+
+model Invitation {
+  id           String    @id @default(cuid())
+  inviterId    String
+  inviter      User      @relation("inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  email        String
+  message      String?
+  createdAt    DateTime  @default(now())
+  acceptedAt   DateTime?
+  acceptedById String?
+  acceptedBy   User?     @relation("acceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@index([inviterId, createdAt])
 }
 
 model Friendship {

@@ -31,7 +31,7 @@ export const CITIES = [
 export const RESERVED_HANDLES = new Set([
   "admin", "api", "jobs", "feed", "messages", "settings", "login", "register",
   "notifications", "styleguide", "p", "people", "post", "applications",
-  "verifications", "privacy", "forgot-password", "reset-password", "friends",
+  "verifications", "privacy", "forgot-password", "reset-password", "friends", "invite",
 ]);
 
 export const INSTITUTION_CATEGORY_LABELS: Record<InstitutionCategory, string> = {

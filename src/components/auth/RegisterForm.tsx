@@ -19,7 +19,13 @@ const CATEGORIES: [string, string][] = [
   ["JINE", "Jiné"],
 ];
 
-export function RegisterForm({ initialKind }: { initialKind: "PERSON" | "INSTITUTION" }) {
+export function RegisterForm({
+  initialKind,
+  inviteId,
+}: {
+  initialKind: "PERSON" | "INSTITUTION";
+  inviteId?: string;
+}) {
   const [kind, setKind] = useState<"PERSON" | "INSTITUTION">(initialKind);
   const [state, action] = useActionState<FormState, FormData>(registerAction, null);
 
@@ -31,6 +37,7 @@ export function RegisterForm({ initialKind }: { initialKind: "PERSON" | "INSTITU
   return (
     <form action={action} className="space-y-4">
       <input type="hidden" name="kind" value={kind} />
+      {inviteId && <input type="hidden" name="invite" value={inviteId} />}
       <div className="flex gap-3" role="radiogroup" aria-label="Druh účtu">
         <button type="button" role="radio" aria-checked={kind === "PERSON"} className={optionClass(kind === "PERSON")} onClick={() => setKind("PERSON")}>
           <ChefHat className="size-6" aria-hidden />

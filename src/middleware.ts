@@ -25,6 +25,7 @@ export const config = {
   matcher: [
     "/feed/:path*",
     "/friends",
+    "/invite",
     "/messages/:path*",
     "/notifications",
     "/settings/:path*",

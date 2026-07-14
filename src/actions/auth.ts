@@ -19,7 +19,38 @@ const registerSchema = z.object({
   email: z.string().trim().toLowerCase().email("Zadej platný e-mail"),
   password: z.string().min(8, "Heslo musí mít aspoň 8 znaků").max(200),
   category: z.string().optional(),
+  invite: z.string().optional(),
 });
+
+/** Přijetí pozvánky po registraci: označí ji a pošle novému účtu žádost o přátelství od zvoucího. */
+async function acceptInvitation(invitationId: string, newUserId: string): Promise<void> {
+  try {
+    const invitation = await db.invitation.findUnique({
+      where: { id: invitationId },
+      select: { id: true, inviterId: true, acceptedAt: true },
+    });
+    if (!invitation || invitation.acceptedAt || invitation.inviterId === newUserId) return;
+
+    await db.invitation.update({
+      where: { id: invitation.id },
+      data: { acceptedAt: new Date(), acceptedById: newUserId },
+    });
+    const friendship = await db.friendship.create({
+      data: { requesterId: invitation.inviterId, addresseeId: newUserId },
+      select: { id: true },
+    });
+    const { notify } = await import("@/lib/notify");
+    await notify({
+      userId: newUserId,
+      actorId: invitation.inviterId,
+      type: "FRIEND_REQUEST",
+      friendshipId: friendship.id,
+    });
+  } catch (err) {
+    // pozvánka nesmí nikdy shodit registraci
+    console.error("[invite:accept]", err);
+  }
+}
 
 async function uniqueHandle(name: string): Promise<string> {
   const base = slugifyHandle(name);
@@ -35,7 +66,7 @@ async function uniqueHandle(name: string): Promise<string> {
 export async function registerAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = registerSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]!.message };
-  const { kind, name, email, password, category } = parsed.data;
+  const { kind, name, email, password, category, invite } = parsed.data;
 
   if (!(await rateLimit(`register:${await clientIp()}`, 5, 3600)))
     return { error: "Příliš mnoho registrací. Zkus to prosím za hodinu." };
@@ -57,6 +88,8 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
     },
     select: { id: true, kind: true },
   });
+
+  if (invite) await acceptInvitation(invite, user.id);
 
   await createSession(user.id, user.kind);
   redirect("/settings?welcome=1");

@@ -251,6 +251,7 @@ Insert notifikací přes `INSERT … ON CONFLICT DO NOTHING` (raw). Efekt: max 1
 /login /register       auth (veřejné) · /forgot-password /reset-password
 /feed                  feed postů: taby Přátelé / Vše, chronologicky (přihlášení)
 /friends               žádosti o přátelství + seznam přátel (přihlášení)
+/invite                pozvánky do aplikace: e-mail + sdílitelný odkaz (přihlášení)
 /post/[id]             detail postu s komentáři
 /people                adresář lidí: filtry openToWork / dovednost / město (veřejný)
 /jobs                  job board s filtry (veřejný — SEO)

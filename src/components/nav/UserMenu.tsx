@@ -59,6 +59,9 @@ export function UserMenu({ user }: { user: MenuUser }) {
           <Link href="/friends" className={item} onClick={() => setOpen(false)}>
             Přátelé
           </Link>
+          <Link href="/invite" className={item} onClick={() => setOpen(false)}>
+            Pozvat do Cookus
+          </Link>
           {user.kind === "PERSON" && (
             <Link href="/applications" className={item} onClick={() => setOpen(false)}>
               Moje přihlášky
