@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { runLiveDemoSeed } from "@/lib/demo-seed";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 300; // Vercel si hodnotu ořízne na maximum plánu
 
 /**
  * Nahraje živý demo obsah přímo na serveru (kde je přístup k DB) — bez nutnosti
@@ -31,13 +31,12 @@ async function handle(req: Request) {
     );
   }
 
-  // Vlastní klient s vyšším limitem připojení — seed vkládá fotky paralelně
-  // a s výchozím connection_limit=1 by se do serverless limitu nemusel vejít.
-  const baseUrl = process.env.DATABASE_URL ?? "";
-  const separator = baseUrl.includes("?") ? "&" : "?";
-  const db = new PrismaClient({
-    datasources: { db: { url: `${baseUrl}${separator}connection_limit=10&pool_timeout=60` } },
-  });
+  // Vlastní klient s vyšším limitem připojení (přes URL, bez duplicitních
+  // parametrů — DATABASE_URL už typicky obsahuje connection_limit=1).
+  const connectionUrl = new URL(process.env.DATABASE_URL ?? "");
+  connectionUrl.searchParams.set("connection_limit", "5");
+  connectionUrl.searchParams.set("pool_timeout", "120");
+  const db = new PrismaClient({ datasources: { db: { url: connectionUrl.toString() } } });
 
   const startedAt = Date.now();
   try {
